@@ -1,5 +1,5 @@
 /* =====================================================================
-   Jan Kodad — online fitness coaching
+   Vytrvej — online fitness coaching s Janem Kodadem
    Interakce prodejní stránky
    ===================================================================== */
 (function () {
@@ -131,7 +131,7 @@
      přes fetch a mailto se použije jen jako záloha.
   */
   var FORM_ENDPOINT = "";
-  var CONTACT_EMAIL = "info@jankodad.cz";
+  var CONTACT_EMAIL = "info@vytrvej.cz";
 
   var form = document.getElementById("kontaktForm");
   var note = document.getElementById("formNote");

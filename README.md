@@ -1,7 +1,8 @@
-# Jan Kodad — prodejní stránka online fitness coachingu
+# Vytrvej — prodejní stránka online fitness coachingu
 
-Statická jednostránková prodejní stránka (landing page) pro nabídku online fitness coachingu
-a tréninkových plánů na míru. Bez build kroku, bez závislostí — stačí otevřít `index.html`.
+Statická jednostránková prodejní stránka (landing page) pro značku **Vytrvej** — online fitness
+coaching a tréninkové plány na míru, které vede **Jan Kodad**. Bez build kroku, bez závislostí —
+stačí otevřít `index.html`.
 
 ## Struktura
 
@@ -10,7 +11,37 @@ index.html               hlavní prodejní stránka
 obchodni-podminky.html   obchodní podmínky (odkaz z patičky)
 assets/css/styles.css    styly
 assets/js/main.js        interakce (menu, ceník, formulář, animace)
+assets/img/logo.svg      logo v celku (značka + nápis)
+assets/img/logo-mark.svg samotná značka „V"
 ```
+
+## Značka
+
+Název **Vytrvej** stojí na jediné myšlence: vydržet dost dlouho, aby se výsledky stihly dostavit.
+
+Logo je minimalistické — písmeno **V** psané jedním tahem, kde pravé rameno vystoupá výš než levé.
+Čte se zároveň jako „V" i jako křivka, která po propadu roste. V hlavičce je vsazené do modré
+dlaždice se zaoblenými rohy, samostatně se používá jako modrá linka na tmavém podkladu.
+
+Wordmark je vždy **malými písmeny** (`vytrvej`), řez 800, mírně stažené prostrkání.
+
+V hlavičce a patičce je značka vložená přímo do HTML jako inline SVG (dědí barvu z CSS přes
+`currentColor`), takže soubory v `assets/img/` slouží pro použití mimo web — sociální sítě,
+dokumenty, tisk. Text v `logo.svg` je vysázený fontem; pro tisk ho převeď na křivky.
+
+### Barvy
+
+| Proměnná | Hodnota | Použití |
+|---|---|---|
+| `--accent` | `#4da6ff` | značka, tlačítka, ikony, zvýraznění |
+| `--accent-dk` | `#2b8cf0` | hover stav tlačítek |
+| `--accent-ink` | `#06121f` | text na modrém podkladu |
+| `--bg` / `--bg-alt` | `#080b11` / `#0c111a` | pozadí stránky a střídavých sekcí |
+| `--surface` / `--surface-2` | `#111825` / `#161f2f` | karty a vnořené bloky |
+| `--text` / `--muted` | `#e6ecf5` / `#93a1b8` | základní a doplňkový text |
+
+Celá paleta je v `:root` v `assets/css/styles.css` — změnou `--accent` se překlopí celý web.
+Kontrast všech textových dvojic je nad 4,5 : 1 (WCAG AA).
 
 ## Spuštění lokálně
 
@@ -54,10 +85,10 @@ Následující místa obsahují zástupný obsah:
 - **Reference** (`#reference` v `index.html`) — texty jsou **ukázkové** a je nutné je nahradit
   skutečnými referencemi reálných klientů, ideálně se souhlasem se zveřejněním jména.
 - **Fotka trenéra** (`#o-mne`) — místo SVG zástupce vlož `<img src="assets/img/jan-kodad.jpg" alt="Jan Kodad">`.
-- **Kontakty** — `info@jankodad.cz` a `+420 777 123 456` v `index.html`, `obchodni-podminky.html`
+- **Kontakty** — `info@vytrvej.cz` a `+420 777 123 456` v `index.html`, `obchodni-podminky.html`
   a v konstantě `CONTACT_EMAIL` v `assets/js/main.js`.
 - **IČO a sídlo** — patička a body 1 obchodních podmínek.
-- **Doména** — `https://www.jankodad.cz/` v `<link rel="canonical">`, OG tazích a JSON-LD.
+- **Doména** — `https://www.vytrvej.cz/` v `<link rel="canonical">`, OG tazích a JSON-LD.
 - **Údaje v sekci O mně a statistiky** (počet klientů, roky praxe, certifikace) — ověřit, ať sedí.
 - **Obchodní podmínky** jsou obecná šablona; před zveřejněním je vhodné je nechat zkontrolovat právníkem.
 
