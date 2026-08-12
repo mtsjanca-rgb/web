@@ -111,10 +111,10 @@ p  { margin: 0 0 1rem; }
 .logo-mark svg { display: block; width: 27px; height: 27px; }
 .logo-text { display: flex; flex-direction: column; line-height: 1.14; }
 .logo-word { font-size: 1.26rem; font-weight: 800; letter-spacing: -.035em; }
-.logo-text small { font-weight: 500; font-size: .67rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.logo-text small { white-space: nowrap; font-weight: 500; font-size: .67rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
 
 .nav { display: flex; align-items: center; gap: 26px; }
-.nav a { text-decoration: none; font-size: .95rem; font-weight: 600; color: var(--muted); transition: color .2s ease; }
+.nav a { text-decoration: none; font-size: .95rem; font-weight: 600; color: var(--muted); white-space: nowrap; transition: color .2s ease; }
 .nav a:hover { color: var(--text); }
 .nav .nav-cta { color: var(--accent-ink); }
 
@@ -267,6 +267,49 @@ p  { margin: 0 0 1rem; }
 
 .price-legal { max-width: 640px; margin: 34px auto 0; text-align: center; font-size: .84rem; color: var(--muted); }
 
+/* ------------------------- Kuchařka ------------------------- */
+.book-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 54px; align-items: center; }
+
+.book-features { list-style: none; margin: 0; padding: 0; display: grid; gap: 26px; }
+.book-features li { display: flex; gap: 18px; align-items: flex-start; }
+.book-features h3 { margin-bottom: .3em; }
+.book-features p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+.book-note {
+  margin: 30px 0 0; padding: 16px 18px;
+  border-left: 3px solid var(--line); border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  background: var(--surface); color: var(--muted); font-size: .87rem;
+}
+
+.book-visual { position: relative; }
+/* Záře nesmí přesahovat mimo sekci — na rozdíl od hera ji tu nic neořezává. */
+.book-visual .hero-blob { inset: 10% 4% -8% 8%; }
+.recipe-card {
+  position: relative; z-index: 1;
+  background: linear-gradient(180deg, var(--surface), #0d131d);
+  border: 1px solid var(--line); border-radius: 20px;
+  padding: 24px; box-shadow: var(--shadow);
+  transform: rotate(1deg);
+}
+.recipe-top { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--line); font-size: .95rem; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.chip {
+  padding: 6px 13px; border-radius: 999px;
+  background: rgba(77, 166, 255, .12); border: 1px solid rgba(77, 166, 255, .3);
+  color: var(--accent); font-size: .78rem; font-weight: 700;
+}
+
+.recipe-macros { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+.recipe-macros li { padding: 12px 4px; background: var(--surface-2); border-radius: var(--radius-s); }
+.recipe-macros b { display: block; font-size: 1.05rem; }
+.recipe-macros span { font-size: .72rem; color: var(--muted); }
+
+.recipe-swap { list-style: none; margin: 0; padding: 14px 0 0; border-top: 1px dashed rgba(255, 255, 255, .09); display: grid; gap: 9px; }
+.recipe-swap li { display: flex; justify-content: space-between; gap: 14px; font-size: .88rem; }
+.recipe-swap span { color: var(--muted); }
+.recipe-swap b { color: var(--accent); font-weight: 600; }
+
 /* ------------------------- Kroky ------------------------- */
 .steps { counter-reset: step; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
 .steps li { position: relative; padding-top: 8px; }
@@ -389,20 +432,9 @@ p  { margin: 0 0 1rem; }
 }
 
 /* ------------------------- Responzivita ------------------------- */
-@media (max-width: 980px) {
-  .hero-grid { grid-template-columns: 1fr; gap: 44px; }
-  .hero-visual { max-width: 460px; }
-  .grid-3, .grid-2, .addon-grid { grid-template-columns: 1fr 1fr; }
-  .steps { grid-template-columns: 1fr 1fr; }
-  .steps li::after { display: none; }
-  .about-grid { grid-template-columns: 1fr; gap: 34px; }
-  .about-photo { max-width: 280px; }
-  .footer-inner { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 760px) {
-  body { font-size: 16px; }
-
+/* Navigace se sbaluje dřív než zbytek layoutu — šest položek se vodorovně
+   vejde až zhruba od 1000 px, níž už se text láme do více řádků. */
+@media (max-width: 1000px) {
   .nav {
     position: fixed; inset: 76px 0 auto; z-index: 90;
     flex-direction: column; align-items: stretch; gap: 4px;
@@ -415,9 +447,28 @@ p  { margin: 0 0 1rem; }
   .nav a { padding: 13px 4px; border-bottom: 1px solid var(--line); font-size: 1rem; }
   .nav .nav-cta { justify-content: center; margin-top: 14px; border-bottom: 0; }
   .nav-toggle { display: flex; }
+}
+
+@media (max-width: 980px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 44px; }
+  .hero-visual { max-width: 460px; }
+  .grid-3, .grid-2, .addon-grid { grid-template-columns: 1fr 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
+  .steps li::after { display: none; }
+  .about-grid { grid-template-columns: 1fr; gap: 34px; }
+  .about-photo { max-width: 280px; }
+  .book-grid { grid-template-columns: 1fr; gap: 40px; }
+  .book-visual { max-width: 480px; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 760px) {
+  body { font-size: 16px; }
+
 
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 26px 12px; }
   .grid-3, .grid-2, .addon-grid, .steps, .form-row, .footer-inner { grid-template-columns: 1fr; }
+  .recipe-macros { grid-template-columns: 1fr 1fr; }
   .price-card.featured { order: -1; }
   .hero-actions .btn { flex: 1 1 100%; }
   .footer-bottom { flex-direction: column; }

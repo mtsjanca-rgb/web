@@ -17,7 +17,7 @@
 <meta property="og:url" content="https://www.vytrvej.cz/">
 <meta name="twitter:card" content="summary_large_image">
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%234da6ff'/%3E%3Cpath d='M8 12 L19 29 L32 6' fill='none' stroke='%2306121f' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%234da6ff'/%3E%3Cpath d='M9 20 L17 29 L32 9' fill='none' stroke='%2306121f' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -28,15 +28,16 @@
   <div class="container header-inner">
     <a class="logo" href="#top" aria-label="Vytrvej — domů">
       <span class="logo-mark" aria-hidden="true">
-        <svg viewBox="0 0 40 40"><path d="M8 12 L19 29 L32 6" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 40 40"><path d="M9 20 L17 29 L32 9" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       <span class="logo-text"><span class="logo-word">vytrvej</span><small>online coaching</small></span>
     </a>
 
     <nav class="nav" id="nav" aria-label="Hlavní navigace">
+      <a href="#komu-sedne">Komu to sedne</a>
       <a href="#sluzby">Služby</a>
       <a href="#cenik">Ceník</a>
-      <a href="#jak-to-funguje">Jak to funguje</a>
+      <a href="#kucharka">Kuchařka</a>
       <a href="#o-mne">O mně</a>
       <a href="#faq">FAQ</a>
       <a class="btn btn-primary btn-sm nav-cta" href="#kontakt">Nezávazná konzultace</a>
@@ -136,8 +137,67 @@
     </div>
   </section>
 
+  <!-- ============ PRO KOHO ============ -->
+  <section class="section section-alt" id="komu-sedne">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">Komu to sedne</p>
+        <h2>Když ti nevyjde posilovna od devíti do pěti</h2>
+        <p class="section-sub">
+          Online coaching má jednu výhodu, kterou trenér v posilovně nedožene: netrvá na tom,
+          abys byl na konkrétním místě v konkrétní čas. Plán se staví kolem tvého týdne, ne naopak.
+        </p>
+      </div>
+
+      <div class="grid-2 features">
+        <article class="feature reveal">
+          <svg class="ico ico-lg" aria-hidden="true"><use href="#i-shift"></use></svg>
+          <div>
+            <h3>Směnný provoz</h3>
+            <p>
+              Ranní, odpolední, noční — plán nemá pevné dny. Dostaneš tréninky označené A, B, C
+              a odtrénuješ je, kdy ti to vyjde. Počítám i s tím, že po noční je výkon jinde,
+              a podle toho nastavuji zátěž i objem.
+            </p>
+          </div>
+        </article>
+        <article class="feature reveal">
+          <svg class="ico ico-lg" aria-hidden="true"><use href="#i-stroller"></use></svg>
+          <div>
+            <h3>Ženy na mateřské</h3>
+            <p>
+              Tréninky na 20–30 minut, doma, bez vybavení nebo s jedním párem činek — dají se
+              přerušit a dokončit později. Návrat po porodu stavíme postupně od středu těla
+              a pánevního dna, až po šestinedělí a po odsouhlasení lékařem.
+            </p>
+          </div>
+        </article>
+        <article class="feature reveal">
+          <svg class="ico ico-lg" aria-hidden="true"><use href="#i-suitcase"></use></svg>
+          <div>
+            <h3>Časté cesty za prací</h3>
+            <p>
+              Ke každému tréninku dostaneš i hotelovou variantu — s minimem vybavení a v kratším
+              čase. Nemusíš tak po každé služebce začínat znovu.
+            </p>
+          </div>
+        </article>
+        <article class="feature reveal">
+          <svg class="ico ico-lg" aria-hidden="true"><use href="#i-spark"></use></svg>
+          <div>
+            <h3>Úplní začátečníci</h3>
+            <p>
+              Nemusíš umět ani jeden cvik. Začínáme u techniky, videoukázek a lehkých vah —
+              a přidáváme, až když sedí provedení.
+            </p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ ŘEŠENÍ ============ -->
-  <section class="section section-alt" id="sluzby">
+  <section class="section" id="sluzby">
     <div class="container">
       <div class="section-head reveal">
         <p class="eyebrow">Co pro tebe dělám</p>
@@ -181,7 +241,7 @@
   </section>
 
   <!-- ============ CENÍK ============ -->
-  <section class="section" id="cenik">
+  <section class="section section-alt" id="cenik">
     <div class="container">
       <div class="section-head reveal">
         <p class="eyebrow">Nabídka</p>
@@ -226,7 +286,9 @@
           <ul class="tick-list">
             <li>Vše z balíčku Tréninkový plán</li>
             <li>Úprava plánu <b>každé 4 týdny</b></li>
-            <li>Nastavení kalorií a maker + ukázkový jídelníček</li>
+            <li>Nastavení kalorií a maker</li>
+            <li><b>Jídelníček na míru</b> na celý týden, měněný po měsíci</li>
+            <li><b>Kuchařka Vytrvej</b> — 60 receptů, i bez lepku a laktózy</li>
             <li>Rozbor techniky z videa (2× měsíčně)</li>
             <li>Check-in každý týden přes formulář</li>
             <li>Podpora na WhatsApp / e-mailu, odpověď do 48 h</li>
@@ -246,7 +308,8 @@
             <li>Videohovor <b>1× týdně</b> (30 minut)</li>
             <li>Neomezený rozbor techniky z videa</li>
             <li>Úprava plánu průběžně, ne jen po 4 týdnech</li>
-            <li>Jídelníček na míru včetně variant na cesty</li>
+            <li>Jídelníček <b>měněný každé 2 týdny</b>, včetně variant na cesty</li>
+            <li>Kuchařka Vytrvej <b>v rozšířené verzi</b> (120 receptů)</li>
             <li>Prioritní odpovědi do 12 hodin</li>
           </ul>
           <a class="btn btn-ghost btn-block" href="#kontakt" data-plan="Coaching Premium">Mám zájem</a>
@@ -266,6 +329,86 @@
         Ceny jsou konečné, nejsem plátce DPH. Platba převodem po odsouhlasení nabídky.
         Coaching lze ukončit ke konci zaplaceného období bez udání důvodu.
       </p>
+    </div>
+  </section>
+
+  <!-- ============ KUCHAŘKA ============ -->
+  <section class="section" id="kucharka">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">Součást balíčků Standard a Premium</p>
+        <h2>Kuchařka Vytrvej</h2>
+        <p class="section-sub">
+          Jídelníček je k ničemu, když nevíš, co si z něj uvařit. Proto ke každému balíčku
+          od Coaching Standard výš patří kuchařka s recepty, které sedí na tvoje makra.
+        </p>
+      </div>
+
+      <div class="book-grid">
+        <div class="book-copy reveal">
+          <ul class="book-features">
+            <li>
+              <svg class="ico ico-lg" aria-hidden="true"><use href="#i-book"></use></svg>
+              <div>
+                <h3>60 receptů, u Premium 120</h3>
+                <p>Snídaně, hlavní jídla, svačiny i něco sladkého. Rozdělené podle toho, kolik mají bílkovin a kolik času zaberou.</p>
+              </div>
+            </li>
+            <li>
+              <svg class="ico ico-lg" aria-hidden="true"><use href="#i-food"></use></svg>
+              <div>
+                <h3>Bez lepku i bez laktózy</h3>
+                <p>U každého receptu je varianta pro bezlepkovou a bezlaktózovou stravu — ne zvláštní kapitola vzadu, ale rovnou u jídla, které vaříš.</p>
+              </div>
+            </li>
+            <li>
+              <svg class="ico ico-lg" aria-hidden="true"><use href="#i-timer"></use></svg>
+              <div>
+                <h3>Většina do 20 minut</h3>
+                <p>Recepty počítají s tím, že vaříš po práci nebo s dítětem na ruce. Žádné třídenní marinování.</p>
+              </div>
+            </li>
+            <li>
+              <svg class="ico ico-lg" aria-hidden="true"><use href="#i-cart"></use></svg>
+              <div>
+                <h3>Nákupní seznam na týden</h3>
+                <p>Ke každému týdnu jídelníčku dostaneš hotový seznam. Nakoupíš jednou a máš klid.</p>
+              </div>
+            </li>
+          </ul>
+
+          <p class="book-note">
+            Kuchařka i jídelníček řeší běžné stravování a potravinové intolerance na úrovni výběru
+            surovin. Nejde o léčebnou výživu — u diagnostikované celiakie, alergie nebo jiného
+            onemocnění postupujeme podle doporučení tvého lékaře nebo nutričního terapeuta.
+          </p>
+        </div>
+
+        <div class="book-visual reveal" aria-hidden="true">
+          <div class="recipe-card">
+            <div class="recipe-top">
+              <span class="dot"></span>
+              <strong>Kuřecí wrap s jogurtovým dresinkem</strong>
+            </div>
+            <div class="chips">
+              <span class="chip">bez lepku</span>
+              <span class="chip">bez laktózy</span>
+              <span class="chip">15 minut</span>
+            </div>
+            <ul class="recipe-macros">
+              <li><b>612</b><span>kcal</span></li>
+              <li><b>48 g</b><span>bílkoviny</span></li>
+              <li><b>61 g</b><span>sacharidy</span></li>
+              <li><b>18 g</b><span>tuky</span></li>
+            </ul>
+            <ul class="recipe-swap">
+              <li><span>tortilla</span><b>→ kukuřičná</b></li>
+              <li><span>bílý jogurt</span><b>→ kokosový</b></li>
+            </ul>
+          </div>
+          <div class="hero-blob"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -404,6 +547,18 @@
           <p>Nemusíš. Umím pracovat i s jednodušším přístupem — porce, skladba talíře, pravidelnost. Počítání maker nabízím těm, kterým vyhovuje, ne jako povinnost.</p>
         </details>
         <details class="reveal">
+          <summary>Mám intoleranci na lepek nebo laktózu. Poradíš si s tím?</summary>
+          <p>Ano. Jídelníček i kuchařka počítají s bezlepkovou a bezlaktózovou variantou u každého receptu, takže nevaříš zvlášť pro sebe a zvlášť pro rodinu. Napiš mi intolerance do vstupního dotazníku a rovnou z nich vyjdu. U diagnostikované celiakie nebo alergie se držím doporučení tvého lékaře či nutričního terapeuta.</p>
+        </details>
+        <details class="reveal">
+          <summary>Dělám na směny. Dá se podle plánu vůbec trénovat?</summary>
+          <p>Právě proto plán nemá pevné dny. Tréninky jsou označené A, B, C a ty je odtrénuješ v pořadí, jak ti vyjde čas. Po nočních počítám s nižší zátěží — není smysl tlačit osobní rekord po dvanáctihodinovce.</p>
+        </details>
+        <details class="reveal">
+          <summary>Jsem na mateřské a mám maximálně půl hodiny denně. Stačí to?</summary>
+          <p>Stačí. Tréninky stavím na 20–30 minut, doma a s minimem vybavení, a dají se přerušit a dokončit později. Po porodu začínáme až po šestinedělí a po souhlasu lékaře, postupně od hlubokého stabilizačního systému a pánevního dna.</p>
+        </details>
+        <details class="reveal">
           <summary>Co když mám zranění nebo zdravotní omezení?</summary>
           <p>Napiš to do vstupního dotazníku. Plán tomu přizpůsobím. Nenahrazuji ale lékaře ani fyzioterapeuta — u akutních potíží nejdřív k odborníkovi, pak stavíme trénink.</p>
         </details>
@@ -489,7 +644,7 @@
     <div>
       <a class="logo" href="#top">
         <span class="logo-mark" aria-hidden="true">
-          <svg viewBox="0 0 40 40"><path d="M8 12 L19 29 L32 6" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 40 40"><path d="M9 20 L17 29 L32 9" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
         <span class="logo-text"><span class="logo-word">vytrvej</span><small>online coaching</small></span>
       </a>
@@ -528,6 +683,13 @@
   <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 11 5-3v8l-5-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="i-food" viewBox="0 0 24 24"><path d="M6 3v8a3 3 0 0 0 6 0V3M9 11v10M18 3c-1.5 2-2 4-2 6s.7 3 2 3v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shift" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-stroller" viewBox="0 0 24 24"><path d="M4 12h12a8 8 0 0 0-8-8v8M4 12h13l-1.7 4.5H7.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M17 12V4h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="20" r="1.7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="15" cy="20" r="1.7" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-suitcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 7V4h6v3M9 12v4M15 12v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 2 1 3 3 0 0 1 2-1h6v14h-6a3 3 0 0 0-2 1 3 3 0 0 0-2-1H4zM12 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.3a2 2 0 0 0 2 1.7h7.5a2 2 0 0 0 2-1.6L21 8H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.3" fill="currentColor"/><circle cx="18" cy="20" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2.5 1.5M9 2h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3 7 9 6 9-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6 3h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
 </svg>

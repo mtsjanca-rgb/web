@@ -12,16 +12,16 @@ obchodni-podminky.html   obchodní podmínky (odkaz z patičky)
 assets/css/styles.css    styly
 assets/js/main.js        interakce (menu, ceník, formulář, animace)
 assets/img/logo.svg      logo v celku (značka + nápis)
-assets/img/logo-mark.svg samotná značka „V"
+assets/img/logo-mark.svg samotná značka (fajfka)
 ```
 
 ## Značka
 
 Název **Vytrvej** stojí na jediné myšlence: vydržet dost dlouho, aby se výsledky stihly dostavit.
 
-Logo je minimalistické — písmeno **V** psané jedním tahem, kde pravé rameno vystoupá výš než levé.
-Čte se zároveň jako „V" i jako křivka, která po propadu roste. V hlavičce je vsazené do modré
-dlaždice se zaoblenými rohy, samostatně se používá jako modrá linka na tmavém podkladu.
+Logo je minimalistická **fajfka** — odškrtnuto, splněno. Jeden tah, kde pravé rameno vystoupá výš
+než levé, takže se čte zároveň jako značka „hotovo" i jako stoupající křivka. V hlavičce je vsazená
+do modré dlaždice se zaoblenými rohy, samostatně se používá jako modrá linka na tmavém podkladu.
 
 Wordmark je vždy **malými písmeny** (`vytrvej`), řez 800, mírně stažené prostrkání.
 
@@ -56,22 +56,29 @@ Nasazení: nahrát obsah složky na jakýkoli statický hosting (Netlify, Vercel
 
 1. **Hero** — hlavní sdělení + dvě CTA
 2. **Statistiky** — čísla s dopočítáváním při scrollu
-3. **Pro koho to je** — pojmenování problémů klienta
-4. **Služby** — co je součástí coachingu
-5. **Ceník** — 3 balíčky + přepínač měsíčně / 3 měsíce (−15 %) + doplňkové služby
-6. **Jak to funguje** — 4 kroky spolupráce
-7. **O mně** — představení trenéra
-8. **Reference** — hodnocení klientů
-9. **FAQ** — 7 nejčastějších dotazů
-10. **Kontaktní formulář** — poptávka s předvyplněným balíčkem
+3. **Dřeš, ale výsledky nikde** — pojmenování problémů klienta
+4. **Komu to sedne** — směnný provoz, ženy na mateřské, časté cesty, začátečníci
+5. **Služby** — co je součástí coachingu
+6. **Ceník** — 3 balíčky + přepínač měsíčně / 3 měsíce (−15 %) + doplňkové služby
+7. **Kuchařka** — recepty k jídelníčku, bezlepkové a bezlaktózové varianty
+8. **Jak to funguje** — 4 kroky spolupráce
+9. **O mně** — představení trenéra
+10. **Reference** — hodnocení klientů
+11. **FAQ** — 10 nejčastějších dotazů
+12. **Kontaktní formulář** — poptávka s předvyplněným balíčkem
 
 ## Nabídka (aktuálně nastavené ceny)
 
 | Balíček | Cena | Obsah |
 |---|---|---|
 | Tréninkový plán | 1 990 Kč jednorázově | plán na 8–12 týdnů, videoukázky, progrese, 1 revize |
-| Coaching Standard | 2 990 Kč / měsíc | plán + výživa + týdenní check-in + rozbor techniky 2× měsíčně |
-| Coaching Premium | 4 990 Kč / měsíc | vše ze Standardu + videohovor 1× týdně + neomezený rozbor techniky |
+| Coaching Standard | 2 990 Kč / měsíc | plán + kalorie a makra + **jídelníček na míru** + **kuchařka (60 receptů)** + týdenní check-in + rozbor techniky 2× měsíčně |
+| Coaching Premium | 4 990 Kč / měsíc | vše ze Standardu + jídelníček měněný po 2 týdnech + **kuchařka ve verzi 120 receptů** + videohovor 1× týdně + neomezený rozbor techniky |
+
+Jídelníček a kuchařka patří k balíčkům **od Coaching Standard výš** — samotný tréninkový plán je
+neobsahuje. U každého receptu je bezlepková a bezlaktózová varianta; sekce `#kucharka` to popisuje
+včetně upozornění, že nejde o léčebnou výživu a u diagnostikované celiakie nebo alergie rozhoduje
+lékař či nutriční terapeut.
 
 Doplňkově: konzultace 60 min (890 Kč), rozbor techniky (490 Kč), plán pro páry (2 990 Kč).
 
@@ -105,7 +112,7 @@ Odešle se POST s JSON tělem; při chybě se použije mailto jako záloha.
 
 ## Poznámky
 
-- Responzivní od 320 px výš, mobilní menu, dark téma.
+- Responzivní od 320 px výš, dark téma. Navigace se sbaluje do hamburgeru pod 1000 px.
 - Respektuje `prefers-reduced-motion` (vypne animace i dopočítávání čísel).
 - Přístupnost: skip link, `aria` atributy u menu a ceníku, viditelný focus.
 - SEO: meta description, Open Graph, JSON-LD `ProfessionalService` s katalogem nabídky.

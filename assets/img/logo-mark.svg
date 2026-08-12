@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="Vytrvej">
   <title>Vytrvej</title>
-  <!-- „V" jako vzestup: linka klesne a vystoupá výš, než začala -->
-  <path d="M8 12 L19 29 L32 6"
+  <!-- Fajfka = splněno. Každý odtrénovaný den je jedno odškrtnutí. -->
+  <path d="M9 20 L17 29 L32 9"
         fill="none" stroke="#4da6ff" stroke-width="5"
         stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
