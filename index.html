@@ -448,13 +448,19 @@
   <!-- ============ O MNĚ ============ -->
   <section class="section" id="o-mne">
     <div class="container about-grid">
-      <div class="about-photo reveal" aria-hidden="true">
-        <!-- PLACEHOLDER: nahraď vlastní fotkou, např. <img src="assets/img/jan-kodad.jpg" alt="Jan Kodad"> -->
+      <div class="about-photo reveal">
         <div class="photo-frame">
-          <svg viewBox="0 0 200 240" role="img" aria-label="Fotografie trenéra">
-            <rect width="200" height="240" rx="18" fill="#14181d"/>
-            <circle cx="100" cy="88" r="38" fill="#232a32"/>
-            <path d="M32 240c0-42 30-70 68-70s68 28 68 70z" fill="#232a32"/>
+          <!--
+            Fotka trenéra. Stačí do repa přidat soubor assets/img/jan-kodad.jpg —
+            dokud tam není, onerror ji odstraní a zůstane zástupná silueta pod ní.
+            Výřez se ladí přes `object-position` v .photo-frame img (styles.css).
+          -->
+          <img src="assets/img/jan-kodad.jpg" alt="Jan Kodad, osobní trenér a online kouč"
+               loading="lazy" decoding="async" onerror="this.remove()">
+          <svg class="photo-fallback" viewBox="0 0 200 240" aria-hidden="true">
+            <rect width="200" height="240" rx="18" fill="#111825"/>
+            <circle cx="100" cy="88" r="38" fill="#1d2839"/>
+            <path d="M32 240c0-42 30-70 68-70s68 28 68 70z" fill="#1d2839"/>
           </svg>
           <span class="photo-tag">Jan Kodad</span>
         </div>

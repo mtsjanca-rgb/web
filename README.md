@@ -91,7 +91,15 @@ Následující místa obsahují zástupný obsah:
 
 - **Reference** (`#reference` v `index.html`) — texty jsou **ukázkové** a je nutné je nahradit
   skutečnými referencemi reálných klientů, ideálně se souhlasem se zveřejněním jména.
-- **Fotka trenéra** (`#o-mne`) — místo SVG zástupce vlož `<img src="assets/img/jan-kodad.jpg" alt="Jan Kodad">`.
+- **Fotka trenéra** (`#o-mne`) — markup už na ni čeká. Stačí přidat soubor
+  **`assets/img/jan-kodad.jpg`** a stránka ho sama začne používat; dokud tam není, `onerror`
+  obrázek odstraní a zůstane zástupná silueta (žádný rozbitý obrázek).
+  Rámeček má poměr **3 : 4** a fotku ořezává přes `object-fit: cover`. U širokého snímku
+  se výřez ladí jedinou hodnotou v `styles.css`:
+
+  ```css
+  .photo-frame img { object-position: 42% 50%; }  /* nižší číslo = víc z levé strany */
+  ```
 - **Kontakty** — `info@vytrvej.cz` a `+420 777 123 456` v `index.html`, `obchodni-podminky.html`
   a v konstantě `CONTACT_EMAIL` v `assets/js/main.js`.
 - **IČO a sídlo** — patička a body 1 obchodních podmínek.
