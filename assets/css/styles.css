@@ -340,7 +340,10 @@ p  { margin: 0 0 1rem; }
 }
 /* Výřez fotky. První hodnota posouvá vodorovně: 50 % je střed,
    nižší číslo bere víc z levé strany snímku. */
-.photo-frame img { z-index: 1; object-position: 42% 50%; }
+.photo-frame img { z-index: 1; object-position: 38% 50%; }
+/* Fotka má jméno vypálené v sobě, štítek by ho jen zdvojoval —
+   ukazuje se proto jen u zástupné siluety (img odstraní onerror). */
+.photo-frame:has(img) .photo-tag { display: none; }
 .photo-tag {
   position: absolute; left: 16px; bottom: 16px; z-index: 2;
   padding: 8px 16px; border-radius: 999px;

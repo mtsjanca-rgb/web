@@ -13,6 +13,7 @@ assets/css/styles.css    styly
 assets/js/main.js        interakce (menu, ceník, formulář, animace)
 assets/img/logo.svg      logo v celku (značka + nápis)
 assets/img/logo-mark.svg samotná značka (fajfka)
+assets/img/jan-kodad.jpg fotka trenéra do sekce „O mně"
 ```
 
 ## Značka
@@ -91,21 +92,28 @@ Následující místa obsahují zástupný obsah:
 
 - **Reference** (`#reference` v `index.html`) — texty jsou **ukázkové** a je nutné je nahradit
   skutečnými referencemi reálných klientů, ideálně se souhlasem se zveřejněním jména.
-- **Fotka trenéra** (`#o-mne`) — markup už na ni čeká. Stačí přidat soubor
-  **`assets/img/jan-kodad.jpg`** a stránka ho sama začne používat; dokud tam není, `onerror`
-  obrázek odstraní a zůstane zástupná silueta (žádný rozbitý obrázek).
-  Rámeček má poměr **3 : 4** a fotku ořezává přes `object-fit: cover`. U širokého snímku
-  se výřez ladí jedinou hodnotou v `styles.css`:
-
-  ```css
-  .photo-frame img { object-position: 42% 50%; }  /* nižší číslo = víc z levé strany */
-  ```
 - **Kontakty** — `info@vytrvej.cz` a `+420 777 123 456` v `index.html`, `obchodni-podminky.html`
   a v konstantě `CONTACT_EMAIL` v `assets/js/main.js`.
 - **IČO a sídlo** — patička a body 1 obchodních podmínek.
 - **Doména** — `https://www.vytrvej.cz/` v `<link rel="canonical">`, OG tazích a JSON-LD.
 - **Údaje v sekci O mně a statistiky** (počet klientů, roky praxe, certifikace) — ověřit, ať sedí.
 - **Obchodní podmínky** jsou obecná šablona; před zveřejněním je vhodné je nechat zkontrolovat právníkem.
+
+## Fotka trenéra
+
+Sekce „O mně" používá `assets/img/jan-kodad.jpg`. Rámeček má poměr **3 : 4** a fotku ořezává
+přes `object-fit: cover`, takže široký snímek se nedeformuje. Výřez se ladí jedinou hodnotou:
+
+```css
+.photo-frame img { object-position: 38% 50%; }  /* nižší číslo = víc z levé strany */
+```
+
+Výchozích 38 % drží postavu mírně vlevo od středu. Pokud fotka v repu chybí, `onerror` obrázek
+odstraní a zobrazí se zástupná silueta se štítkem jména — nikdy se neukáže rozbitý obrázek.
+Když fotka je, štítek se skrývá přes `:has(img)`, protože jméno už nese samotný snímek.
+
+Snímek je uložený ve **1920 × 1080 při kvalitě 82** (~270 kB). Originál ve 2560 × 1440 měl 1,1 MB,
+což je na úvodní načtení zbytečná zátěž — zůstává dohledatelný v historii commitů.
 
 ## Odesílání formuláře
 
