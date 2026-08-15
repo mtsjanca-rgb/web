@@ -73,13 +73,15 @@
         if (!entry.isIntersecting) return;
         var el = entry.target;
         var target = parseInt(el.dataset.count, 10);
+        // volitelná přípona, např. „+" u čísla 99
+        var suffix = el.dataset.suffix || "";
         var start = performance.now();
         var duration = 1100;
 
         var tick = function (now) {
           var p = Math.min((now - start) / duration, 1);
           var eased = 1 - Math.pow(1 - p, 3);
-          el.textContent = Math.round(target * eased);
+          el.textContent = Math.round(target * eased) + (p === 1 ? suffix : "");
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);

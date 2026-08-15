@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 48" width="196" height="48" role="img" aria-label="Vytrvej — online coaching">
   <title>Vytrvej</title>
-  <rect x="0" y="4" width="40" height="40" rx="12" fill="#0b64d1"/>
+  <rect x="0" y="4" width="40" height="40" rx="12" fill="#4da6ff"/>
   <path d="M9 24 L17 33 L32 13"
-        fill="none" stroke="#ffffff" stroke-width="4.6"
+        fill="none" stroke="#06121f" stroke-width="4.6"
         stroke-linecap="round" stroke-linejoin="round"/>
   <!-- Pozn.: text je vysázen fontem, ne křivkami. Pro tisk převeď na křivky. -->
-  <text x="52" y="33" fill="#0e1621"
+  <text x="52" y="33" fill="#e6ecf5"
         font-family="Inter, 'Segoe UI', system-ui, -apple-system, Arial, sans-serif"
         font-size="25" font-weight="800" letter-spacing="-0.8">vytrvej</text>
 </svg>

@@ -22,7 +22,7 @@ Název **Vytrvej** stojí na jediné myšlence: vydržet dost dlouho, aby se vý
 
 Logo je minimalistická **fajfka** — odškrtnuto, splněno. Jeden tah, kde pravé rameno vystoupá výš
 než levé, takže se čte zároveň jako značka „hotovo" i jako stoupající křivka. V hlavičce je vsazená
-do modré dlaždice se zaoblenými rohy, samostatně se používá jako modrá linka na světlém podkladu.
+do modré dlaždice se zaoblenými rohy, samostatně se používá jako modrá linka na tmavém podkladu.
 
 Wordmark je vždy **malými písmeny** (`vytrvej`), řez 800, mírně stažené prostrkání.
 
@@ -32,23 +32,17 @@ dokumenty, tisk. Text v `logo.svg` je vysázený fontem; pro tisk ho převeď na
 
 ### Barvy
 
-Vizuál je **světlý a klidný**: bílé pozadí, vlasové linky místo stínů, ploché plochy bez
-gradientů a jediná barevná akcentní modrá. Sekce se střídají bílá / světle šedá, aby stránka
-držela rytmus bez rámečků navíc.
-
 | Proměnná | Hodnota | Použití |
 |---|---|---|
-| `--accent` | `#0b64d1` | značka, tlačítka, ikony, zvýraznění |
-| `--accent-dk` | `#0950ab` | hover stav tlačítek |
-| `--accent-soft` | `#eaf2fd` | podbarvení štítků, čísel kroků, zvýraznění v nadpisu |
-| `--accent-ink` | `#ffffff` | text na modrém podkladu |
-| `--bg` / `--bg-alt` | `#ffffff` / `#f6f8fb` | pozadí stránky a střídavých sekcí |
-| `--surface` / `--surface-2` | `#ffffff` / `#f4f7fa` | karty a vnořené bloky |
-| `--line` / `--line-strong` | `#e5e9f0` / `#d2d9e4` | vlasové linky a orámování polí |
-| `--text` / `--muted` | `#0e1621` / `#56657a` | základní a doplňkový text |
+| `--accent` | `#4da6ff` | značka, tlačítka, ikony, zvýraznění |
+| `--accent-dk` | `#2b8cf0` | hover stav tlačítek |
+| `--accent-ink` | `#06121f` | text na modrém podkladu |
+| `--bg` / `--bg-alt` | `#080b11` / `#0c111a` | pozadí stránky a střídavých sekcí |
+| `--surface` / `--surface-2` | `#111825` / `#161f2f` | karty a vnořené bloky |
+| `--text` / `--muted` | `#e6ecf5` / `#93a1b8` | základní a doplňkový text |
 
 Celá paleta je v `:root` v `assets/css/styles.css` — změnou `--accent` se překlopí celý web.
-Nejnižší kontrast textové dvojice je **4,8 : 1**, tedy nad hranicí WCAG AA.
+Kontrast všech textových dvojic je nad 4,5 : 1 (WCAG AA).
 
 ## Spuštění lokálně
 
@@ -134,7 +128,10 @@ Odešle se POST s JSON tělem; při chybě se použije mailto jako záloha.
 
 ## Poznámky
 
-- Responzivní od 320 px výš, světlé téma. Navigace se sbaluje do hamburgeru pod 1000 px.
+- Responzivní od 320 px výš, dark téma. Navigace se sbaluje do hamburgeru pod 1000 px.
+- Čísla ve statistikách se dopočítávají z atributu `data-count`; volitelnou příponu přidá
+  `data-suffix` (např. `data-count="99" data-suffix="+"` vypíše `99+`). Údaj bez `data-count`
+  zůstane statický, jako `24/7` nebo `100 %`.
 - Respektuje `prefers-reduced-motion` (vypne animace i dopočítávání čísel).
 - Přístupnost: skip link, `aria` atributy u menu a ceníku, viditelný focus.
 - SEO: meta description, Open Graph, JSON-LD `ProfessionalService` s katalogem nabídky.
