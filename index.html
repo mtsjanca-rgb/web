@@ -34,8 +34,9 @@
     </a>
 
     <nav class="nav" id="nav" aria-label="Hlavní navigace">
-      <a href="#komu-sedne">Komu to sedne</a>
+      <a href="#komu-sedne">Pro koho</a>
       <a href="#sluzby">Služby</a>
+      <a href="#ukazka">Ukázka</a>
       <a href="#cenik">Ceník</a>
       <a href="#kucharka">Kuchařka</a>
       <a href="#o-mne">O mně</a>
@@ -193,6 +194,12 @@
           </div>
         </article>
       </div>
+
+      <p class="not-for reveal">
+        <b>A komu ne?</b> Když čekáš proměnu za třicet dnů, nechce se ti zapisovat tréninky
+        ani odpovídat na týdenní check-in, nebo hledáš někoho, kdo to odmaká za tebe —
+        nebudeme si rozumět. Radši ti to řeknu hned než po zaplacení.
+      </p>
     </div>
   </section>
 
@@ -240,8 +247,66 @@
     </div>
   </section>
 
+  <!-- ============ UKÁZKA PRODUKTU ============ -->
+  <section class="section section-alt" id="ukazka">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">Podívej se dovnitř</p>
+        <h2>Co přesně ti přistane v e-mailu</h2>
+        <p class="section-sub">
+          Žádná kočka v pytli. Takhle vypadá plán, jídelníček i kuchařka, se kterými budeš pracovat.
+        </p>
+      </div>
+
+      <!--
+        Úvodní video. Doplň ID z YouTube do atributu data-yt (např. data-yt="dQw4w9WgXcQ").
+        Dokud je prázdné, JS celý blok odstraní — nezobrazí se nic rozbitého.
+        Přehrávač se načítá až po kliknutí, takže stránka kvůli němu nezpomalí.
+      -->
+      <div class="video-block reveal" id="videoBlock" data-yt="">
+        <button class="video-poster" type="button" aria-label="Přehrát úvodní video">
+          <img src="assets/img/video-poster.jpg" alt="" loading="lazy" onerror="this.remove()">
+          <span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-play"></use></svg></span>
+          <span class="video-label">Jak spolupráce probíhá · 2 minuty</span>
+        </button>
+      </div>
+
+      <!--
+        Náhledy produktu. Nahraď soubory v assets/img/ vlastními snímky obrazovky.
+        Dokud tam nejsou, onerror obrázek odstraní a zůstane popisný zástupný rámeček.
+      -->
+      <div class="preview-grid">
+        <figure class="preview reveal">
+          <div class="preview-frame">
+            <img src="assets/img/ukazka-plan.jpg" alt="Ukázka tréninkového plánu" loading="lazy" onerror="this.remove()">
+            <span class="preview-ph" aria-hidden="true">Náhled plánu</span>
+          </div>
+          <figcaption><b>Tréninkový plán</b> Série, opakování, tempo i zátěž na každý týden — včetně videoukázky ke každému cviku.</figcaption>
+        </figure>
+        <figure class="preview reveal">
+          <div class="preview-frame">
+            <img src="assets/img/ukazka-jidelnicek.jpg" alt="Ukázka jídelníčku" loading="lazy" onerror="this.remove()">
+            <span class="preview-ph" aria-hidden="true">Náhled jídelníčku</span>
+          </div>
+          <figcaption><b>Jídelníček</b> Celý týden s makry u každého jídla a s nákupním seznamem, který stačí vzít do obchodu.</figcaption>
+        </figure>
+        <figure class="preview reveal">
+          <div class="preview-frame">
+            <img src="assets/img/ukazka-kucharka.jpg" alt="Ukázka kuchařky" loading="lazy" onerror="this.remove()">
+            <span class="preview-ph" aria-hidden="true">Náhled kuchařky</span>
+          </div>
+          <figcaption><b>Kuchařka</b> Recepty s postupem, časem přípravy a bezlepkovou i bezlaktózovou variantou.</figcaption>
+        </figure>
+      </div>
+
+      <p class="preview-note reveal">
+        Chceš vidět víc? <a href="#kontakt">Napiš si o ukázkovou stránku</a> plánu i jídelníčku — pošlu ti je v PDF, nezávazně a zdarma.
+      </p>
+    </div>
+  </section>
+
   <!-- ============ CENÍK ============ -->
-  <section class="section section-alt" id="cenik">
+  <section class="section" id="cenik">
     <div class="container">
       <div class="section-head reveal">
         <p class="eyebrow">Nabídka</p>
@@ -325,15 +390,33 @@
         </div>
       </div>
 
+      <div class="guarantee reveal">
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-shield"></use></svg>
+        <div>
+          <h3>Nezavazuješ se na dlouho</h3>
+          <p>
+            Coaching běží po měsících a končí ke konci zaplaceného období — bez výpovědní lhůty
+            a bez pokut. Jako spotřebitel máš navíc zákonných 14 dní na odstoupení od smlouvy
+            uzavřené přes internet. Přesné znění najdeš v <a href="obchodni-podminky.html">obchodních podmínkách</a>.
+          </p>
+        </div>
+      </div>
+
+      <ul class="trust-row reveal">
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> Platba převodem</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> Bez automatického prodlužování</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> Ukončení kdykoli ke konci období</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> Ceny konečné, nejsem plátce DPH</li>
+      </ul>
+
       <p class="price-legal reveal">
-        Ceny jsou konečné, nejsem plátce DPH. Platba převodem po odsouhlasení nabídky.
-        Coaching lze ukončit ke konci zaplaceného období bez udání důvodu.
+        Nabídku ti pošlu e-mailem po nezávazné konzultaci — platíš až ve chvíli, kdy ji odsouhlasíš.
       </p>
     </div>
   </section>
 
   <!-- ============ KUCHAŘKA ============ -->
-  <section class="section" id="kucharka">
+  <section class="section section-alt" id="kucharka">
     <div class="container">
       <div class="section-head reveal">
         <p class="eyebrow">Součást balíčků Standard a Premium</p>
@@ -413,7 +496,7 @@
   </section>
 
   <!-- ============ JAK TO FUNGUJE ============ -->
-  <section class="section section-alt" id="jak-to-funguje">
+  <section class="section" id="jak-to-funguje">
     <div class="container">
       <div class="section-head reveal">
         <p class="eyebrow">Průběh spolupráce</p>
@@ -446,7 +529,7 @@
   </section>
 
   <!-- ============ O MNĚ ============ -->
-  <section class="section" id="o-mne">
+  <section class="section section-alt" id="o-mne">
     <div class="container about-grid">
       <div class="about-photo reveal">
         <div class="photo-frame">
@@ -500,26 +583,38 @@
     Před spuštěním je nahraď skutečnými referencemi od reálných klientů (ideálně
     včetně souhlasu se zveřejněním jména a fotky).
   -->
-  <section class="section section-alt" id="reference">
+  <section class="section" id="reference">
     <div class="container">
       <div class="section-head reveal">
         <p class="eyebrow">Reference</p>
         <h2>Co říkají klienti</h2>
       </div>
 
+      <!--
+        Souhrn se počítá z hodnocení uvedených níže (atribut data-rating u každé reference),
+        takže vždy odpovídá tomu, co je na stránce doopravdy. Nezadávej ho ručně.
+      -->
+      <div class="rating-summary reveal" id="ratingSummary" hidden>
+        <b id="ratingScore">—</b>
+        <div>
+          <div class="stars" id="ratingStars" aria-hidden="true"></div>
+          <span id="ratingCount"></span>
+        </div>
+      </div>
+
       <div class="grid-3 testimonials">
         <figure class="card testimonial reveal">
-          <div class="stars" aria-label="Hodnocení 5 z 5">★★★★★</div>
+          <div class="stars" data-rating="5" aria-label="Hodnocení 5 z 5">★★★★★</div>
           <blockquote>Poprvé mám plán, kterému rozumím. Vím, proč dělám každý cvik a kdy mám přidat. Za půl roku +18 kg na dřepu.</blockquote>
           <figcaption><b>Petr N.</b><span>Coaching Standard · 6 měsíců</span></figcaption>
         </figure>
         <figure class="card testimonial reveal">
-          <div class="stars" aria-label="Hodnocení 5 z 5">★★★★★</div>
+          <div class="stars" data-rating="5" aria-label="Hodnocení 5 z 5">★★★★★</div>
           <blockquote>Cvičím doma se dvěma jednoručkami a gumou. Honza z toho dokázal postavit plán, který mě fakt posouvá.</blockquote>
           <figcaption><b>Lucie K.</b><span>Tréninkový plán</span></figcaption>
         </figure>
         <figure class="card testimonial reveal">
-          <div class="stars" aria-label="Hodnocení 5 z 5">★★★★★</div>
+          <div class="stars" data-rating="5" aria-label="Hodnocení 5 z 5">★★★★★</div>
           <blockquote>Nejvíc mi pomohly týdenní check-iny. Konečně mě někdo drží u toho, i když se mi zrovna nechce.</blockquote>
           <figcaption><b>Martin S.</b><span>Coaching Premium · 4 měsíce</span></figcaption>
         </figure>
@@ -528,7 +623,7 @@
   </section>
 
   <!-- ============ FAQ ============ -->
-  <section class="section" id="faq">
+  <section class="section section-alt" id="faq">
     <div class="container narrow">
       <div class="section-head reveal">
         <p class="eyebrow">Časté dotazy</p>
@@ -645,6 +740,20 @@
   </section>
 </main>
 
+<!-- Lepivá lišta: naskočí po opuštění hera a schová se u kontaktního formuláře. -->
+<div class="sticky-cta" id="stickyCta" hidden>
+  <div class="container sticky-cta-inner">
+    <p class="sticky-cta-text">
+      <b>Plány od 1 990 Kč</b>
+      <span>coaching od 2 540 Kč měsíčně při 3měsíčním balíčku</span>
+    </p>
+    <div class="sticky-cta-actions">
+      <a class="btn btn-ghost btn-sm" href="#cenik">Ceník</a>
+      <a class="btn btn-primary btn-sm" href="#kontakt">Nezávazná konzultace</a>
+    </div>
+  </div>
+</div>
+
 <footer class="site-footer">
   <div class="container footer-inner">
     <div>
@@ -696,6 +805,8 @@
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 2 1 3 3 0 0 1 2-1h6v14h-6a3 3 0 0 0-2 1 3 3 0 0 0-2-1H4zM12 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.3a2 2 0 0 0 2 1.7h7.5a2 2 0 0 0 2-1.6L21 8H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.3" fill="currentColor"/><circle cx="18" cy="20" r="1.3" fill="currentColor"/></symbol>
   <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2.5 1.5M9 2h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.3-2.9 8.1-7 9.5-4.1-1.4-7-5.2-7-9.5V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
   <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3 7 9 6 9-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6 3h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
 </svg>

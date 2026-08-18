@@ -206,6 +206,87 @@
     note.className = "form-note" + (type ? " " + type : "");
   }
 
+  /* ---------- Lepivá lišta s CTA ---------- */
+  /*
+     Naskočí, jakmile návštěvník opustí hero, a zase zmizí u kontaktního
+     formuláře — tam už má tlačítko přímo před sebou a lišta by překážela.
+  */
+  var stickyCta = document.getElementById("stickyCta");
+  if (stickyCta && "IntersectionObserver" in window) {
+    var hero = document.querySelector(".hero");
+    var kontakt = document.getElementById("kontakt");
+    var mimoHero = false;
+    var uKontaktu = false;
+
+    var prekresli = function () {
+      var ukaz = mimoHero && !uKontaktu;
+      stickyCta.hidden = !ukaz;
+      // hidden se musí zrušit dřív, než začne přejezd, jinak není co animovat
+      requestAnimationFrame(function () { stickyCta.classList.toggle("is-visible", ukaz); });
+    };
+
+    if (hero) {
+      new IntersectionObserver(function (e) {
+        mimoHero = !e[0].isIntersecting;
+        prekresli();
+      }, { threshold: 0 }).observe(hero);
+    }
+    if (kontakt) {
+      new IntersectionObserver(function (e) {
+        uKontaktu = e[0].isIntersecting;
+        prekresli();
+      }, { threshold: 0 }).observe(kontakt);
+    }
+  }
+
+  /* ---------- Úvodní video ---------- */
+  /*
+     Přehrávač se vkládá až po kliknutí — stránka tak nenačítá skripty
+     YouTube zbytečně. Bez vyplněného data-yt se blok odstraní.
+  */
+  var videoBlock = document.getElementById("videoBlock");
+  if (videoBlock) {
+    var ytId = (videoBlock.dataset.yt || "").trim();
+    if (!ytId) {
+      videoBlock.remove();
+    } else {
+      videoBlock.querySelector(".video-poster").addEventListener("click", function () {
+        var frame = document.createElement("iframe");
+        frame.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(ytId) + "?autoplay=1&rel=0";
+        frame.title = "Úvodní video";
+        frame.allow = "accelerometer; autoplay; encrypted-media; picture-in-picture";
+        frame.allowFullscreen = true;
+        videoBlock.replaceChildren(frame);
+      });
+    }
+  }
+
+  /* ---------- Souhrn hodnocení ---------- */
+  /*
+     Průměr i počet se počítají z referencí na stránce, takže souhrn vždy
+     odpovídá tomu, co je pod ním vidět. Bez referencí zůstane skrytý.
+  */
+  var summary = document.getElementById("ratingSummary");
+  if (summary) {
+    var hodnoceni = [].map.call(
+      document.querySelectorAll(".testimonial [data-rating]"),
+      function (el) { return parseFloat(el.dataset.rating); }
+    ).filter(function (n) { return !isNaN(n); });
+
+    if (hodnoceni.length) {
+      var prumer = hodnoceni.reduce(function (a, b) { return a + b; }, 0) / hodnoceni.length;
+      var zaokrouhleny = Math.round(prumer * 10) / 10;
+      var pocet = hodnoceni.length;
+
+      document.getElementById("ratingScore").textContent =
+        zaokrouhleny.toFixed(1).replace(".", ",");
+      document.getElementById("ratingStars").textContent =
+        "★★★★★".slice(0, Math.round(prumer));
+      document.getElementById("ratingCount").textContent = "z 5 · " + pocet + " hodnocení";
+      summary.hidden = false;
+    }
+  }
+
   /* ---------- Rok v patičce ---------- */
   var rok = document.getElementById("rok");
   if (rok) rok.textContent = new Date().getFullYear();

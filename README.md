@@ -60,13 +60,17 @@ Nasazení: nahrát obsah složky na jakýkoli statický hosting (Netlify, Vercel
 3. **Dřeš, ale výsledky nikde** — pojmenování problémů klienta
 4. **Komu to sedne** — směnný provoz, ženy na mateřské, časté cesty, začátečníci
 5. **Služby** — co je součástí coachingu
-6. **Ceník** — 3 balíčky + přepínač měsíčně / 3 měsíce (−15 %) + doplňkové služby
-7. **Kuchařka** — recepty k jídelníčku, bezlepkové a bezlaktózové varianty
-8. **Jak to funguje** — 4 kroky spolupráce
-9. **O mně** — představení trenéra
-10. **Reference** — hodnocení klientů
-11. **FAQ** — 10 nejčastějších dotazů
-12. **Kontaktní formulář** — poptávka s předvyplněným balíčkem
+6. **Ukázka** — úvodní video a náhledy plánu, jídelníčku a kuchařky
+7. **Ceník** — 3 balíčky + přepínač měsíčně / 3 měsíce (−15 %) + doplňkové služby + garance
+8. **Kuchařka** — recepty k jídelníčku, bezlepkové a bezlaktózové varianty
+9. **Jak to funguje** — 4 kroky spolupráce
+10. **O mně** — představení trenéra
+11. **Reference** — souhrn hodnocení a citace klientů
+12. **FAQ** — 10 nejčastějších dotazů
+13. **Kontaktní formulář** — poptávka s předvyplněným balíčkem
+
+Přes celou stránku pak běží **lepivá lišta s CTA**, která naskočí po opuštění hera
+a schová se u kontaktního formuláře.
 
 ## Nabídka (aktuálně nastavené ceny)
 
@@ -97,6 +101,9 @@ Následující místa obsahují zástupný obsah:
 - **IČO a sídlo** — patička a body 1 obchodních podmínek.
 - **Doména** — `https://www.vytrvej.cz/` v `<link rel="canonical">`, OG tazích a JSON-LD.
 - **Údaje v sekci O mně a statistiky** (počet klientů, roky praxe, certifikace) — ověřit, ať sedí.
+- **Úvodní video** — doplnit ID do `data-yt` u `#videoBlock`, jinak se blok nezobrazí.
+- **Náhledy produktu** — `assets/img/ukazka-plan.jpg`, `ukazka-jidelnicek.jpg`,
+  `ukazka-kucharka.jpg` a `video-poster.jpg`; do té doby se ukazují zástupné rámečky.
 - **Obchodní podmínky** jsou obecná šablona; před zveřejněním je vhodné je nechat zkontrolovat právníkem.
 
 ## Fotka trenéra
@@ -115,6 +122,36 @@ Když fotka je, štítek se skrývá přes `:has(img)`, protože jméno už nese
 Snímek je uložený ve **1920 × 1080 při kvalitě 82** (~270 kB). Originál ve 2560 × 1440 měl 1,1 MB,
 což je na úvodní načtení zbytečná zátěž — zůstává dohledatelný v historii commitů.
 
+## Prodejní prvky
+
+**Lepivá lišta s CTA** (`#stickyCta`) se řídí dvěma pozorovateli: naskočí, jakmile hero
+zmizí z obrazovky, a schová se u sekce `#kontakt`, kde by jen překrývala formulář.
+Na mobilu se zúží na jediné tlačítko přes celou šířku — s cenou vedle něj by narostla
+přes 90 px a ukrojila čtvrtinu obrazovky.
+
+**Úvodní video** (`#videoBlock`) se načítá až po kliknutí, takže stránka kvůli němu
+netahá skripty YouTube předem. ID videa se vkládá do atributu:
+
+```html
+<div class="video-block" id="videoBlock" data-yt="dQw4w9WgXcQ">
+```
+
+Dokud je `data-yt` prázdné, JS blok odstraní — nezobrazí se nic rozbitého. Přehrávač
+běží přes `youtube-nocookie.com`.
+
+**Náhledy produktu** čekají na tři snímky obrazovky: `assets/img/ukazka-plan.jpg`,
+`ukazka-jidelnicek.jpg` a `ukazka-kucharka.jpg` (plus volitelně `video-poster.jpg`).
+Chybějící soubor `onerror` odstraní a zůstane popisný zástupný rámeček — stejný postup
+jako u fotky trenéra.
+
+**Souhrn hodnocení** nad referencemi se **počítá z atributů `data-rating`** u jednotlivých
+referencí, takže vždy odpovídá tomu, co je na stránce doopravdy vidět. Nezadávej ho ručně;
+když přidáš referenci, souhrn se posune sám. Bez referencí zůstane skrytý.
+
+**Garance** pod ceníkem vychází z toho, co skutečně stojí v obchodních podmínkách —
+měsíční období bez automatického prodlužování a zákonných 14 dní na odstoupení. Není to
+marketingový slib navíc; když podmínky změníš, uprav i tenhle blok.
+
 ## Odesílání formuláře
 
 Bez backendu formulář otevře e-mailového klienta s předvyplněnou poptávkou.
@@ -128,7 +165,7 @@ Odešle se POST s JSON tělem; při chybě se použije mailto jako záloha.
 
 ## Poznámky
 
-- Responzivní od 320 px výš, dark téma. Navigace se sbaluje do hamburgeru pod 1000 px.
+- Responzivní od 320 px výš, dark téma. Navigace se sbaluje do hamburgeru pod 1060 px.
 - Čísla ve statistikách se dopočítávají z atributu `data-count`; volitelnou příponu přidá
   `data-suffix` (např. `data-count="99" data-suffix="+"` vypíše `99+`). Údaj bez `data-count`
   zůstane statický, jako `24/7` nebo `100 %`.
