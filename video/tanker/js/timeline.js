@@ -132,12 +132,12 @@ function scenePose(t){
     const drop = io(P(t, 25.5, 2.3));
     recDoor.rotation.x = 1.9 * (1 - P(t,26.4,.5));
     bExt = 3.0 * (1 - io(P(t, 25.2, .5))); bAng = .52 - P(t,25.5,1.5)*.3;
-    const off = V3(drop*1, -drop*7.5, drop*1.5);
+    const off = V3(-drop*0.5, -drop*7.5, drop*1.5);
     fighter.position.copy(CONTACT_POS).add(off).add(bob.multiplyScalar(.2));
     fighter.rotation.z = drop*.15; fighter.rotation.x = -drop*.06;
     cam.fov = 44;
     cam.position.copy(CONTACT_POS).add(V3(-22 + k*2, 4.5, 27 - k*3)).addScaledVector(off, .3);
-    aim(CONTACT_POS.clone().add(V3(0,-.5,0)).addScaledVector(off, .5), 540, 800);
+    aim(CONTACT_POS.clone().add(V3(0,-.5,0)).addScaledVector(off, .5), 360, 800);
   } else {                                    // S10 tanker přelétne nad kamerou a odlétá s kondenzačními stopami
     shot = 10; const k = (t-28.0)/3.6;
     fighter.position.set(-60, -40, 60);
