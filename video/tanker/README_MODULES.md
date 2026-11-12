@@ -34,11 +34,20 @@ Render: `node render.js <outdir> [t1,t2,…]` → `window.render(t)` per frame, 
   runs along +z (no mesh rotation), positions still set only by `setBoom` (tip = boom z 12.9 + ext, unchanged). `podHull` children = side windows
   (hidden with it in S5). `podCut` = far half of pod shell (double-sided, with window openings) + cut rim + consoles. `op` children live under
   `op` and a `head` sub-group; all op meshes have receiveShadow = false (lit inside the cutaway). No new handles.
+  v3.1 (modeler fix): ruddevators rebuilt (dark 0x3a3f48, yellow tip band, light LE, hinge gap, root fairing + hinge cover); span .3→2.1 m,
+  chord 1.15→.74. Centre of area of a ruddevator ≈ rudds[i]-local `V3(∓1.15, 0, .17)` (rudds[0] is the −x one → `V3(-1.15,0,.17)`).
+  Pod window is now a hull-conforming patch (z 1.0–1.5, −90°±34°, flush): `podWin` keeps its old transform (leader anchor unchanged),
+  `podCav` = dark window frame (Mesh + child strips, identity transform). Cutaway rim = thin aluminium cut face + dark inner line + ribs.
 
 ## js/fighter.js – `buildFighter(scene)` → (adds `fighter` to scene)
 `fighter` group · `recDoor` (hinge at (0,1.02,−.91), rotation.x 0→1.9 open) · `RECEPT` · `fTanks[{sh,fl,z0,l}]` x-ray tanks
 · `fDots[28]` + `FPATHS[4]` (fighter-local paths RECEPT → tanks) + `pathPt(path,u)` · `fSkin`, `fXray`, `fighterXray(on)`.
 `fSkin` is collected at build time (all meshes except tanks/dots) – add new skin meshes before that traverse.
+v3.1 x-ray: `fTanks[i] = { sh, fl, z0, l, center }` – `sh` is a Group (dark interior + liquid + bright outline) at the real F-16 tank places
+(F-1/F-2 forward fuselage, A-1 aft fuselage, 2 wing integral tanks, 2 × 370-gal). **`setFuel(p)`** (0..1) sets the level and shows the tanks
+(vfx.fuelFlow calls it; fuelOff hides them each frame). The level plane rises from aft-bottom (axis (0,1,−.85)), wobbles slightly; legacy
+`fl.scale.z` (= fill) still works. `fXray` = fresnel ghost (2 tones); `fXlines[]` = depth-prepass + opaque outline clones toggled by `fighterXray`.
+`fDots` now have depthTest off. `FPATHS` end inside the tanks (wing paths end at (±1.6,0,.9)).
 New (v3 model): `canopy` (gold glass mesh) · `pilot` group (child of the ejection-seat group, reclined) · `NOZZLE` = fighter-local nozzle exit
 `(0, 0, 7.55)` (use for heat haze / exhaust VFX) · `fLights[]` formation strips + nav lights (MeshBasic) · `fDecals[]` insignia / tail band
 (hidden by `fighterXray(true)`). Geometry: nose tip z −7.62 (pitot to −8.1), wingtip AIM-9 at x ±4.7, 370-gal tanks at x ±2.15, AIM-120 at x ±3.65.

@@ -390,7 +390,7 @@ for (const sx of [-1,1]){
 // F-1/F-2 přední trupová (za kabinou nad sáním), A-1 zadní trupová (nad motorem), 2 křídelní (vnitřní část křídla),
 // 2 přídavné 370gal. Každá: tmavý vnitřek (BackSide) + kapalina (hladina = rovina kolmá na LEVEL_AX, discard nad ní;
 // zadní stěny pod hladinou = povrch hladiny) + světlý obrys (inverted hull). Hladina čte fl.scale.z (vfx.fuelFlow) nebo setFuel(p).
-const LEVEL_AX = new THREE.Vector3(0, 1, .85).normalize();   // stoupá zdola a od ocasu (palivo se při náklonu nosem vzhůru hromadí vzadu)
+const LEVEL_AX = new THREE.Vector3(0, 1, -.85).normalize();   // stoupá zdola a od ocasu (palivo se při náklonu nosem vzhůru hromadí vzadu)
 let fuelSet = 0;
 function setFuel(p){ fuelSet = cl(p); fTanks.forEach(K => K.sh.visible = true); }   // volá vfx.fuelFlow každý snímek S8 (fuelOff je skryje)
 const OUTV = `uniform float wpx; void main(){ vec4 mv = modelViewMatrix*vec4(position,1.); vec3 n = normalize(normalMatrix*normal);
@@ -454,12 +454,12 @@ for (let i=0;i<28;i++){ const d = new THREE.Mesh(new THREE.BoxGeometry(.14,.14,.
 const fSkin = []; fighter.traverse(o => { if (o.isMesh && !fTanks.some(T => T.sh===o.parent) && !fDots.includes(o)) fSkin.push([o, o.material]); });
 // rentgen pláště: průsvitné plochy (dva tóny: horní světlejší) + fresnelový lem + neprůhledný obrys siluety (depth prepass + inverted hull)
 const fXray = new THREE.ShaderMaterial({ transparent:true, depthWrite:false,
-  uniforms:{ cA:{ value:new THREE.Color(0x1a3a6a) }, cU:{ value:new THREE.Color(0x3a6aa6) }, cB:{ value:new THREE.Color(0xbfe6ff) } },
+  uniforms:{ cA:{ value:new THREE.Color(0x10264a) }, cU:{ value:new THREE.Color(0x2c5590) }, cB:{ value:new THREE.Color(0xbfe6ff) } },
   vertexShader:`varying vec3 vN, vV; varying float vUp; void main(){ vec4 mv = modelViewMatrix*vec4(position,1.); vV = -mv.xyz; vN = normalMatrix*normal;
     vUp = normalize((modelMatrix*vec4(normal,0.)).xyz).y; gl_Position = projectionMatrix*mv; }`,
   fragmentShader:`uniform vec3 cA, cU, cB; varying vec3 vN, vV; varying float vUp;
     void main(){ float f = 1. - abs(dot(normalize(vN), normalize(vV))); f = pow(f, 2.2);
-      vec3 c = mix(mix(cA, cU, smoothstep(-.2,.7,vUp)), cB, f); gl_FragColor = vec4(c, mix(.3, .92, f));
+      vec3 c = mix(mix(cA, cU, smoothstep(-.2,.7,vUp)), cB, f); gl_FragColor = vec4(c, mix(.5, .94, f));
 #include <colorspace_fragment>
     }` });
 const xPre = new THREE.MeshBasicMaterial({ colorWrite:false }), xOut = outlineMat(0xd8f0ff, .0026);

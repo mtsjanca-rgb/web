@@ -340,14 +340,14 @@ const rudds = [];
   const S1 = 2.1;
   for (const sx of [-1,1]){
     const r = new THREE.Group(); r.position.set(0,0,9.6); boom.add(r);
-    const st = tipCap(stations(.3, S1, .18, [1.8,1.84], s => -.5 + (s-.3)*.24, s => 1.15 - (s-.3)*.23, s => .14 - .06*(s-.3)/1.8), .08);
+    const st = tipCap(stations(.3, S1, .18, [1.78,1.79,1.8,1.82,1.83], s => -.5 + (s-.3)*.24, s => 1.15 - (s-.3)*.23, s => .14 - .06*(s-.3)/1.8), .08);
     mesh(surf(st, (s,z,v) => [sx*s, v, z], (s,f,sd,c) => {
       c.setHex(BASE); let m = 1;
       if (f < .045) c.setHex(LEH);                                   // tenká světlá náběžná hrana
       else if (f >= .7 && f <= .74) c.setHex(HINGE);                 // spára závěsu kormidla
       else if (f > .74) c.setHex(FLAP);
-      if (s > 1.82) c.setHex(f < .045 ? 0xffe27a : TIP);             // žlutý konec (výstražný pás)
-      if (s > 1.79 && s <= 1.82) c.setHex(0x16191d);                 // tmavá linka před pásem (kontrast)
+      if (s > 1.825) c.setHex(f < .045 ? 0xffe27a : TIP);             // žlutý konec (výstražný pás)
+      if (s > 1.795 && s <= 1.825) c.setHex(0x16191d);                 // tmavá linka před pásem (kontrast)
       if (sd < 0) m *= .82;                                          // spodní strana tmavší
       c.multiplyScalar(m);
     }), TVC, r);
@@ -380,17 +380,21 @@ function podLoft(a0fn, a1fn, seg, skip){
 const podHull = mesh(podLoft(() => -Math.PI, () => Math.PI, 40), tGrey, pod);
 // okno operátora: velké zadní (skloněné dozadu-dolů) + 2 boční
 const WIN_P = V(0,-.35,1.26), WIN_R = .8;
-const podCav = mesh((() => { const s = new THREE.Shape(); s.moveTo(-.6,-.4); s.lineTo(.6,-.4); s.lineTo(.6,.4); s.lineTo(-.6,.4); s.lineTo(-.6,-.4);
-  const h = new THREE.Path(); h.moveTo(-.5,-.31); h.lineTo(-.5,.31); h.lineTo(.5,.31); h.lineTo(.5,-.31); h.lineTo(-.5,-.31); s.holes.push(h); return new THREE.ShapeGeometry(s); })(), tDark, pod);
-podCav.position.copy(WIN_P); podCav.rotation.x = WIN_R; podCav.translateZ(.012);
+// v3.1: okno i rám jsou záplaty kopírující plášť podu (zapuštěné, nic nevyčnívá). Zóna okna: z 1.0…1.5, úhel −90°±34°.
+const WZ0 = 1.0, WZ1 = 1.5, WA0 = -124*D, WA1 = -56*D;
+const winFrameM = LM(0x252a31);
+const podCav = patch(podS, WZ0-.05, WZ0+.005, WA0-5*D, WA1+5*D, .006, winFrameM, pod, 1, 8);        // horní rám (handle)
+patch(podS, WZ1-.005, WZ1+.05, WA0-5*D, WA1+5*D, .006, winFrameM, podCav, 1, 8);
+patch(podS, WZ0, WZ1, WA0-5*D, WA0+.5*D, .006, winFrameM, podCav, 4, 2);
+patch(podS, WZ0, WZ1, WA1-.5*D, WA1+5*D, .006, winFrameM, podCav, 4, 2);
+patch(podS, WZ0, WZ1, WA0, WA1, .002, LM(0x0f141b, { roughness:.3 }), podHull, 4, 10);                     // tmavý interiér za sklem (jen zvenku; v řezu S5 skrytý s trupem)
 const podWin = new THREE.Group(); podWin.position.copy(WIN_P); podWin.rotation.x = WIN_R; pod.add(podWin);
 {
-  const gl = new THREE.Mesh(new THREE.PlaneGeometry(1.0,.62), new THREE.MeshBasicMaterial({ color:0x35506e, transparent:true, opacity:.55, depthWrite:false, side:THREE.DoubleSide }));
-  gl.position.z = .03; gl.renderOrder = 6; podWin.add(gl);
-  const glare = new THREE.Mesh(new THREE.PlaneGeometry(.09,.75), new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:.28, depthWrite:false }));
-  glare.position.set(-.18,0,.04); glare.rotation.z = -.55; glare.renderOrder = 7; podWin.add(glare);
-  const glare2 = glare.clone(); glare2.scale.x = .45; glare2.position.x = -.05; podWin.add(glare2);
-  for (const [w,h,x,y] of [[1.1,.06,0,.34],[1.1,.06,0,-.34],[.06,.74,.53,0],[.06,.74,-.53,0]]) mesh(new THREE.BoxGeometry(w,h,.07), frameM, podWin, x,y,.03);
+  const inv = new THREE.Group(); inv.rotation.x = -WIN_R; inv.position.copy(WIN_P).applyAxisAngle(V(1,0,0), -WIN_R).negate(); podWin.add(inv);
+  const glM = new THREE.MeshBasicMaterial({ color:0x2c4562, transparent:true, opacity:.62, depthWrite:false, side:THREE.DoubleSide });
+  const gl = patch(podS, WZ0, WZ1, WA0, WA1, .004, glM, inv, 4, 10); gl.renderOrder = 6; gl.castShadow = false;
+  const glareM = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:.26, depthWrite:false, side:THREE.DoubleSide });
+  for (const [c,w] of [[-104,4],[-97,1.6]]){ const g = patch(podS, WZ0+.04, WZ1-.04, (c-w/2)*D, (c+w/2)*D, .005, glareM, inv, 3, 1); g.renderOrder = 7; g.castShadow = false; }
 }
 // boční okna – děti trupu podu (v řezu S5 se skryjí spolu s ním)
 const SW = [[-.05,.62,-36*D,-10*D],[-.05,.62,190*D,216*D]];
@@ -403,23 +407,35 @@ const podCut = new THREE.Group(); pod.add(podCut); podCut.visible = false;
 const opParts = [];
 {
   const XC = -.52, Aof = z => Math.acos(cl(XC/podF(z).rx, -1, 1));
-  const inWin = c => (c.z > 1.0 && c.z < 1.52 && Math.abs(c.x) < .5 && c.y < -.05) || (c.z > -.05 && c.z < .62 && c.x > .3 && c.y < podF(c.z).cy - .05 && c.y > podF(c.z).cy - podF(c.z).ry*.62);
+  const angOf = c => { const f = podF(c.z); return Math.atan2((c.y-f.cy)/f.ry, c.x/f.rx); };
+  const inWin = c => (c.z > WZ0 && c.z < WZ1 && angOf(c) > WA0 && angOf(c) < WA1) || (c.z > -.05 && c.z < .62 && c.x > .3 && c.y < podF(c.z).cy - .05 && c.y > podF(c.z).cy - podF(c.z).ry*.62);
   const inner = podLoft(z => -Aof(z), z => Aof(z), 34, inWin);
   colorize(inner, (x,y,z,nx,ny,nz,c) => { c.setHex(0x3a4250); c.multiplyScalar(Math.floor((z+3)/.42) % 2 ? .86 : 1); });
   const inM = new THREE.MeshStandardMaterial({ vertexColors:true, roughness:.9, side:THREE.DoubleSide });
   const ih = mesh(inner, inM, podCut); ih.castShadow = false; ih.receiveShadow = false;
-  const edge = LM(0xe6eaef);
+  // řez: tenká hliníková hrana (tloušťka pláště 4 cm) + tmavá vnitřní linka + žebra (přepážky) po 0.42 m
+  const alu = LM(0x9aa2ab, { side:THREE.DoubleSide }), cutD = LM(0x1c2128), ribM = LM(0x56606b);
+  const inward = (p, z, d) => { const f = podF(z), q = V(p.x, p.y - f.cy, 0).normalize(); return p.clone().addScaledVector(q, -d); };
   for (const sg of [1,-1]){
-    const pts = podZs.map(z => podS(z, sg*Aof(z)));
-    const tb = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 60, .03, 6), edge, podCut); tb.receiveShadow = false;
+    const out = podZs.map(z => podS(z, sg*Aof(z))), inn = podZs.map((z,i) => inward(out[i], z, .045));
+    const pos = [], idx = []; out.forEach((p,i) => pos.push(p.x,p.y,p.z, inn[i].x,inn[i].y,inn[i].z));
+    for (let i=0;i<out.length-1;i++){ const a = i*2; idx.push(a,a+1,a+2, a+1,a+3,a+2); }
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals();
+    const face = mesh(g, alu, podCut); face.receiveShadow = false; face.castShadow = false;
+    const t1 = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(out), 60, .011, 5), LM(0xbfc6ce), podCut); t1.receiveShadow = false;
+    const t2 = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(inn), 60, .009, 5), cutD, podCut); t2.receiveShadow = false;
   }
+  for (let z=-2.3; z<2.2; z+=.42){ const A = Aof(z), pts = []; for (let i=0;i<=24;i++){ const a = -A + 2*A*i/24; pts.push(inward(podS(z,a), z, .03)); }
+    const rb = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, .02, 4), ribM, podCut); rb.receiveShadow = false; rb.castShadow = false;
+    // průřez žebra na hraně řezu (Z-profil)
+    for (const sg of [1,-1]){ const p = podS(z, sg*A), q = inward(p, z, .09); const c = mesh(new THREE.BoxGeometry(.03,.03,.05), cutD, podCut); c.position.copy(p).lerp(q,.5); c.receiveShadow = false; } }
   // rámy okna zevnitř (vzdálené boční okno)
   const w = mesh(new THREE.PlaneGeometry(.66,.36), new THREE.MeshBasicMaterial({ color:0x9fc8ee, transparent:true, opacity:.3, depthWrite:false, side:THREE.DoubleSide }), podCut);
   const wc = podS(.29, -23*D); w.position.copy(wc); w.lookAt(wc.clone().add(V(Math.cos(-23*D), Math.sin(-23*D)*1.3, 0))); w.renderOrder = 6;
   const cm = LM(0x262c36), cm2 = LM(0x3c4452), lit = c => new THREE.MeshBasicMaterial({ color:c });
   const P = (g,m,x,y,z) => { const o = mesh(g,m,podCut,x,y,z); o.receiveShadow = false; return o; };
-  P(new THREE.BoxGeometry(1.08,.04,3.1), LM(0x2b313b), .02,-.6,-.75);                          // podlaha
-  P(new THREE.BoxGeometry(1.12,1.0,.05), cm2, .03,-.12,-2.25);                                    // zadní přepážka
+  P(new THREE.BoxGeometry(.72,.03,1.9), LM(0x2b313b), 0,-.585,-.25);                            // podlaha (uvnitř pláště)
+  { const f = podF(-2.05), bh = P(new THREE.CircleGeometry(1,28), new THREE.MeshStandardMaterial({ color:0x3c4452, roughness:.9, side:THREE.DoubleSide }), 0, f.cy, -2.05); bh.scale.set(f.rx*.98, f.ry*.98, 1); } // zadní přepážka (tvar průřezu)
   // pult pod oknem s displeji
   const pan = P(new THREE.BoxGeometry(.62,.05,.34), cm, 0,-.48,.98); pan.rotation.x = -.55;
   for (const [x,c] of [[-.15,0x5dff9a],[.12,0xffb347]]){ const s = P(new THREE.BoxGeometry(.18,.02,.13), lit(c), x,-.45,.97); s.rotation.x = -.55; }
@@ -427,16 +443,14 @@ const opParts = [];
   // boční konzole (levá: teleskop, pravá: řízení tyče)
   for (const sx of [-1,1]){
     const ch = sx < 0 ? .1 : .14;                                                              // bližší konzole nižší (nezakrývá ruku)
-    P(new THREE.BoxGeometry(.2,ch,.62), cm, sx*.38,-.6+ch/2,.72);
-    for (let i=0;i<3;i++) P(new THREE.BoxGeometry(.03,.012,.03), lit([0x5dff9a,0xffd23c,0x9fe8ff][i]), sx*.38 + (i-1)*.05,-.595+ch,.5);
+    P(new THREE.BoxGeometry(.17,ch,.5), cm, sx*.36,-.53+ch/2,.66);
+    for (let i=0;i<3;i++) P(new THREE.BoxGeometry(.03,.012,.03), lit([0x5dff9a,0xffd23c,0x9fe8ff][i]), sx*.36 + (i-1)*.05,-.525+ch,.5);
   }
   // štítky a panel jističů na vzdálené stěně
   { const p = podS(-.6, -2*D); const pb = P(new THREE.BoxGeometry(.03,.26,.5), cm, p.x-.05, p.y+.05, -.6);
     for (let i=0;i<8;i++) P(new THREE.BoxGeometry(.012,.02,.02), lit(i%3 ? 0xd8dde2 : 0xffb347), p.x-.07, p.y+.1 - Math.floor(i/4)*.09, -.75 + (i%4)*.1); }
   // stropní světlo (teplé)
   P(new THREE.BoxGeometry(.3,.02,.08), lit(0xffe2a8), .25,.45,-.2);
-  // potrubí / žebra na vzdálené stěně
-  for (let z=-1.9; z<.8; z+=.42){ const p = podS(z, -5*D); P(new THREE.BoxGeometry(.03,.9,.04), cm2, p.x-.04, p.y+.05, z); }
 }
 // ===================== operátor: leží na břiše, hlava u okna (+z), ruce na ovladačích =====================
 const op = new THREE.Group(); op.position.set(0,-.2,.15); pod.add(op);
@@ -448,8 +462,8 @@ const op = new THREE.Group(); op.position.set(0,-.2,.15); pod.add(op);
   const ball = (p, r, m, par=op) => M(new THREE.SphereGeometry(r, 12, 8), m, p.x, p.y, p.z, par);
   // lehátko: polstr, rám, opěrka brady
   M(loft([[-1.98,-.21,.05,.02],[-1.94,-.21,.27,.055],[.08,-.21,.27,.055],[.12,-.21,.05,.02]],20), couch);
-  M(new THREE.BoxGeometry(.42,.1,1.95), metal, 0,-.32,-.92);
-  for (const z of [-1.75,-.15]) M(new THREE.BoxGeometry(.06,.12,.06), metal, 0,-.42,z);
+  M(new THREE.BoxGeometry(.42,.1,1.55), metal, 0,-.32,-.72);
+  for (const z of [-1.3,-.15]) M(new THREE.BoxGeometry(.06,.1,.06), metal, 0,-.41,z);
   M(new THREE.CylinderGeometry(.025,.025,.36,6), metal, 0,-.24,.6);
   M(loft([[.52,-.07,.02,.02],[.54,-.06,.08,.035],[.67,-.06,.08,.035],[.69,-.07,.02,.02]],12), couch);           // opěrka brady
   for (const sx of [-1,1]) M(new THREE.BoxGeometry(.13,.05,.36), couch, sx*.3,-.2,.3);                           // opěrky loktů
