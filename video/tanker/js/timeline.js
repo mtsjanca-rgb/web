@@ -12,6 +12,10 @@ const S8=[-6.5,25,23.5,-3,23,21,540,815,.4,22,13];
 const S10=[-14,7,88,-8,13,140,860,900];
 const S3=[18,26,95,91,-27,-23,468,760];
 const FX=0, FY=-3, FZ=5;
+const S1C=[-3.0,1.0,780,-6];   // S1: cam dy, rise, aim py, roll°
+const S4C=[-3.5,-30,0];        // S4: fighter from.x, aim px shift, aim py shift
+const S6C=[2.5,-40,-30,-170,-150];       // S6: extra r, dpx A, dpy A, dpx B, dpy B
+const S7C=[1.3,.42,640,800,0];   // S7: pull-back scale, aim lerp R→tip, px, py, ...
 let AZ0=-62, AZ1=-38, R0=15, R1=9, Y0=-3, Y1=-.5, PX1=540, PY1=820, RL0=28, RL1=16;
 
 // cam: PerspectiveCamera; T = buildTanker() handles; F = buildFighter() handles; U = buildUI() handles
@@ -47,8 +51,8 @@ function scenePose(t){
     const F = fighter.position;
     const az = (14 + 14*ks)*Math.PI/180, r = 23 + 3.5*ks;
     cam.fov = 40;
-    cam.position.set(F.x - Math.sin(az)*r, F.y - 4.2 + ks*1.2, F.z - Math.cos(az)*r);
-    aim(V3(F.x, F.y + .2, F.z + .2), 540, 930);
+    cam.position.set(F.x - Math.sin(az)*r, F.y + S1C[0] + ks*S1C[1], F.z - Math.cos(az)*r);
+    aim(V3(F.x, F.y + .2, F.z + .2), 540, S1C[2]); cam.rotateZ(S1C[3]*Math.PI/180);
   } else if (t < 5.45){                       // S2 přes rameno stíhačky jeřábem nahoru → tanker před ní
     shot = 2; const k = (t-3.25)/2.2, ks = io(k);
     fighter.position.set(-6, -16, 70).add(bob);
@@ -65,13 +69,13 @@ function scenePose(t){
     aim(V3(0, -1, 1), S3[6] - 50*ks, S3[7]);
   } else if (t < 12.45){                      // S4 stíhačka se přisune zboku pod ocas
     shot = 4; const k = io(P(t, 9.3, 2.9)), kc = (t-9.3)/3.15;
-    const from = V3(-1.5, -14.5, 49), to = CONTACT_POS.clone().add(V3(0,-.9,3.0));
+    const from = V3(S4C[0], -14.5, 49), to = CONTACT_POS.clone().add(V3(0,-.9,3.0));
     fighter.position.copy(from).lerp(to, k).add(bob.multiplyScalar(.6));
     fighter.rotation.z = -Math.sin(k*Math.PI)*.12;
     bAng = .2 + .25*io(P(t, 10.2, 1.8));
     cam.fov = 44;
     cam.position.set(-20 + kc*4, -13 + kc*1.5, 80 - kc*10);
-    aim(V3(2.5 - kc*2.5, -7.5, 31), 420 + 60*kc, 790);
+    aim(V3(2.5 - kc*2.5, -7.5, 31), 420 + 60*kc + S4C[1]*(1-kc), 790 + S4C[2]*(1-kc));
   } else if (t < 15.55){                      // S5 operátor v okně (boční řez)
     shot = 5; const k = (t-12.45)/3.1, ks = io(k);
     fighter.position.copy(CONTACT_POS).add(V3(0,-.9,3.0)).add(bob.multiplyScalar(.4));
@@ -92,10 +96,10 @@ function scenePose(t){
     const RD = W(boom, V3(0,0,9.6)), BM = W(boom, V3(0,0,7.2));
     // A (15.55–17.4) boční profil celé tyče (závěs → tryska) se stíhačkou pod ní; B (17.45–18.7) šikmo k ose tyče na křidélka
     const A = io(P(t, 15.55, 1.9)), B = io(P(t, 16.75, 1.9));
-    const az = (AZ0 + 5*A + (AZ1-AZ0-5)*B)*Math.PI/180, r = R0 - 2*A - (R0-2-R1)*B;
+    const az = (AZ0 + 5*A + (AZ1-AZ0-5)*B)*Math.PI/180, r = R0 - 2*A - (R0-2-R1)*B + S6C[0];
     cam.fov = 44;
     cam.position.set(RD.x + Math.sin(az)*r, RD.y + Y0 + (Y1-Y0)*B, RD.z + Math.cos(az)*r);
-    aim(BM.clone().lerp(RD, B), 310 + (PX1-310)*B, 690 + (PY1-690)*B);
+    aim(BM.clone().lerp(RD, B), 310 + S6C[1] + (PX1-310+S6C[3]-S6C[1])*B, 690 + S6C[2] + (PY1-690+S6C[4]-S6C[2])*B);
     cam.rotateZ((RL0 + (RL1-RL0)*B)*Math.PI/180);
   } else if (t < 21.7){                       // S7 zasunutí do zásuvky
     shot = 7; const k = (t-18.7)/3.0, ks = io(k);
@@ -106,9 +110,12 @@ function scenePose(t){
     rudds.forEach((r,i)=> r.rotation.x = Math.sin(t*2.6 + i)*.15);
     fighter.updateMatrixWorld(true);
     const R = W(fighter, RECEPT);
+    setBoom(bAng, bExt, bYaw); tanker.updateMatrixWorld(true);
+    const TIP = boomTipWorld(bAng, bExt), wl = S7C[1]*(1 - io(P(t, 19.4, 1.2)));   // cíl mezi zásuvkou a tryskou → do kontaktu jen zásuvka
+    const pb = 1 + (S7C[0]-1)*(1 - .5*ks);
     cam.fov = 44;
-    cam.position.set(R.x - 10.5 + ks*3.2, R.y + 4.2 - ks*1.4, R.z + 5.2 - ks*2.0);
-    aim(R, 580, 800);
+    cam.position.set(R.x + (-10.5 + ks*3.2)*pb, R.y + (4.2 - ks*1.4)*pb, R.z + (5.2 - ks*2.0)*pb);
+    aim(R.clone().lerp(TIP, wl), S7C[2] + (580 - S7C[2])*io(P(t,20.2,1.3))*S7C[4], S7C[3]);
   } else if (t < 24.95){                      // S8 palivo (rentgen): shora-zboku, tyč → zásuvka → nádrže
     shot = 8; const k = (t-21.7)/3.25, ks = io(k);
     fighter.position.copy(CONTACT_POS).add(bob.multiplyScalar(.12));
@@ -163,7 +170,7 @@ function drawUI(t, shot){
   if (shot === 4){ plate(["F-16","RECEIVER"], 300, 280, fa(9.7), pr(W(fighter, new THREE.Vector3(0,.8,-2.5)))); }
   if (shot === 5){ plate(["BOOM","OPERATOR"], 300, 260, fa(13.2), pr(W(op, new THREE.Vector3(0,.12,.5))));
                    plate(["WINDOW"], 780, 1140, fa(14.5), pr(W(podWin, new THREE.Vector3(0,-.15,0)))); }
-  if (shot === 6){ plate(["FLYING","BOOM"], 790, 400, fa(16.2), pr(W(boom, new THREE.Vector3(0,0,5.5))));
+  if (shot === 6){ plate(["FLYING","BOOM"], 790, 400, fa(16.2), pr(W(boom, new THREE.Vector3(0,0,3.5))));
                    plate(["LITTLE","WINGS"], 290, 1000, fa(17.45), pr(W(rudds[0], new THREE.Vector3(-1.15,0,.17)))); }
   if (shot === 7){ const R = pr(W(fighter, RECEPT)); plate(["RECEPTACLE"], 720, 280, fa(19.5), R); contactBurst(U.cx, t, R); }
   if (shot === 8){ plate(["FUEL FLOW","~2.7 T/MIN"], 300, 250, fa(22.2), pr(W(boom, new THREE.Vector3(0,0,13.2))));
