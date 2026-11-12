@@ -6,13 +6,13 @@ import * as THREE from "../lib/three.module.js";
 import { cl, P, io, oc, W } from "./helpers.js";
 import { contactBurst, fuelOff, fuelFlow } from "./vfx.js";
 
-export const SPEED = 150;
-let S8=[-6.5,25,23.5,-3,23,21,540,815,.4,22,13];
-let S10=[-14,7,88,-8,13,140,860,900];
-let S3=[18,26,95,91,-27,-23,468,760];
-let FX=0, FY=-3, FZ=5;
-let AZ0=-62, AZ1=-38, R0=15, R1=7.5, Y0=-3, Y1=-.5, PX1=540, PY1=820, RL0=28, RL1=16;
-export function _tune(o){ AZ0=o.AZ0??AZ0; AZ1=o.AZ1??AZ1; R0=o.R0??R0; R1=o.R1??R1; Y0=o.Y0??Y0; Y1=o.Y1??Y1; PX1=o.PX1??PX1; PY1=o.PY1??PY1; } // m/s ≈ 540 km/h
+export const SPEED = 150; // m/s ≈ 540 km/h
+// camera parameters (cinematographer v3 fix round): S6 boom orbit, S10/S3/S8 framing, S6 fighter offset
+const S8=[-6.5,25,23.5,-3,23,21,540,815,.4,22,13];
+const S10=[-14,7,88,-8,13,140,860,900];
+const S3=[18,26,95,91,-27,-23,468,760];
+const FX=0, FY=-3, FZ=5;
+let AZ0=-62, AZ1=-38, R0=15, R1=9, Y0=-3, Y1=-.5, PX1=540, PY1=820, RL0=28, RL1=16;
 
 // cam: PerspectiveCamera; T = buildTanker() handles; F = buildFighter() handles; U = buildUI() handles
 export function createTimeline(cam, T, F, U){
@@ -164,12 +164,11 @@ function drawUI(t, shot){
   if (shot === 5){ plate(["BOOM","OPERATOR"], 300, 260, fa(13.2), pr(W(op, new THREE.Vector3(0,.12,.5))));
                    plate(["WINDOW"], 780, 1140, fa(14.5), pr(W(podWin, new THREE.Vector3(0,-.15,0)))); }
   if (shot === 6){ plate(["FLYING","BOOM"], 790, 400, fa(16.2), pr(W(boom, new THREE.Vector3(0,0,5.5))));
-                   plate(["LITTLE","WINGS"], 290, 1000, fa(17.45), pr(W(rudds[0], new THREE.Vector3(-1.1,0,.15)))); }
+                   plate(["LITTLE","WINGS"], 290, 1000, fa(17.45), pr(W(rudds[0], new THREE.Vector3(-1.15,0,.17)))); }
   if (shot === 7){ const R = pr(W(fighter, RECEPT)); plate(["RECEPTACLE"], 720, 280, fa(19.5), R); contactBurst(U.cx, t, R); }
   if (shot === 8){ plate(["FUEL FLOW","~2.7 T/MIN"], 300, 250, fa(22.2), pr(W(boom, new THREE.Vector3(0,0,13.2))));
                    plate(["FUEL", Math.round(15 + 85*cl((t-22)/2.8)) + " %"], 810, 470, fa(22.4), pr(W(fighter, new THREE.Vector3(2.4,0,1.6)))); }
   if (shot === 9){ plate(["FUEL","FULL"], 760, 280, fa(26.85), pr(W(fighter, new THREE.Vector3(0,1.25,-3.1)))); }
 }
-globalThis.__tl = { pose, cam, T, F, proj, W, THREE }; // DEBUG probe hook
 return { pose, scenePose, drawUI, aim, CONTACT_POS };
 }

@@ -77,10 +77,10 @@ Optional handles used if present: `T.exhausts` (Object3D[] at engine exits, else
 |---|---|---|---|
 | S1 | 0 – 3.25 | F-16 alone (hook) | FUEL LOW (0.5) |
 | S2 | 3.25 – 5.45 | tanker revealed above | TANKER (3.6) |
-| S3 | 5.45 – 9.3 | KC-135, speed | KC-135 (5.9), SPEED (6.5) |
+| S3 | 5.45 – 9.3 | KC-135, speed (fighter hidden) | KC-135 (5.9), SPEED (6.5, top-right) |
 | S4 | 9.3 – 12.45 | F-16 moves under tail, boom lowers | F-16 RECEIVER (9.7) |
 | S5 | 12.45 – 15.55 | operator in pod (cutaway) | BOOM OPERATOR (12.9), WINDOW (14.2) |
-| S6 | 15.55 – 18.7 | boom + ruddevators | FLYING BOOM (16.0) |
+| S6 | 15.55 – 18.7 | whole boom profile → ruddevators | FLYING BOOM (16.2), LITTLE WINGS (17.45) |
 | S7 | 18.7 – 21.7 | door opens 18.9, boom extends 19.7, contact 20.62 | RECEPTACLE (19.1) + burst |
 | S8 | 21.7 – 24.95 | fuel x-ray | FUEL FLOW (22.2), FUEL % (22.4) |
 | S9 | 24.95 – 28.0 | disconnect 25.2, drop 25.5, door closes 26.4 | FUEL FULL (26.4) |
