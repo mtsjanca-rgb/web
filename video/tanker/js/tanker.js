@@ -391,7 +391,7 @@ patch(podS, WZ0, WZ1, WA0, WA1, .002, LM(0x0f141b, { roughness:.3 }), podHull, 4
 const podWin = new THREE.Group(); podWin.position.copy(WIN_P); podWin.rotation.x = WIN_R; pod.add(podWin);
 {
   const inv = new THREE.Group(); inv.rotation.x = -WIN_R; inv.position.copy(WIN_P).applyAxisAngle(V(1,0,0), -WIN_R).negate(); podWin.add(inv);
-  const glM = new THREE.MeshBasicMaterial({ color:0x5a88b4, transparent:true, opacity:.4, depthWrite:false, side:THREE.DoubleSide });
+  const glM = new THREE.MeshBasicMaterial({ color:0x46749f, transparent:true, opacity:.5, depthWrite:false, side:THREE.DoubleSide });
   const gl = patch(podS, WZ0, WZ1, WA0, WA1, .004, glM, inv, 4, 16); gl.renderOrder = 6; gl.castShadow = false;
   const glareM = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:.42, depthWrite:false, side:THREE.DoubleSide });
   for (const [c,w] of [[-104,4],[-97,1.6],[-50,5],[-42,2]]){ const g = patch(podS, WZ0+.04, WZ1-.04, (c-w/2)*D, (c+w/2)*D, .005, glareM, inv, 3, 1); g.renderOrder = 7; g.castShadow = false; }
