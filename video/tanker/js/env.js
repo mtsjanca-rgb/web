@@ -24,6 +24,10 @@ function noiseTex(){
   return t;
 }
 
+// [D vzdálenost podél osy pohledu S3, L boční posun (− = vlevo), šířka, výška vršku] v čase t = 7.4 s (střed S3);
+// ubíhají +z rychlostí SPEED, takže levé postupně proplouvají spodní polovinou záběru doprava
+const NEAR_LAYOUT = [[950,-560,380,-150],[1250,-180,460,-120],[1400,280,520,-105],[900,40,330,-175],[1100,-1000,440,-135],[1500,-1350,520,-110]];
+const NEAR_SHOTS = { 3:1 };
 export function buildEnv(scene){
 const hemi = new THREE.HemisphereLight(0xb4d0ff, 0xf0ece4, 1.45); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff0d8, 3.4); sun.position.copy(SUN_DIR).multiplyScalar(110);
@@ -160,6 +164,19 @@ for (let i=0;i<9;i++){
   s.position.set(Math.cos(a)*R, TOP - 200, z); towers.add(s); TOW.push({ g:s, z0:z });
 }
 
+// blízké věžovité kupy (S3 a závěr): vyrůstají z paluby pod tankerem a v blízkém plánu, ubíhají plnou rychlostí → paralaxa
+// vlastní RNG (seed 11), aby se nezměnilo pořadí hlavního RNG (seed 7)
+const nearTowers = new THREE.Group(); scene.add(nearTowers); const NEAR = [];
+{ let s2 = 11; const r2 = () => (s2 = (s2*16807)%2147483647)/2147483647;
+  const C = new THREE.Vector3(-62, -11, -71), d = new THREE.Vector3(.656, 0, .755), r = new THREE.Vector3(-.755, 0, .656);
+  for (const [D, L, w, top] of NEAR_LAYOUT){
+    const x = C.x + d.x*D + r.x*L, z = C.z + d.z*D + r.z*L - 7.4*150;
+    const m = new THREE.SpriteMaterial({ map:TT[NEAR.length%3], alphaTest:.5, depthWrite:true, fog:true, color:0xe4ebf6 });
+    const s = new THREE.Sprite(m); s.center.set(.5,.0); const ww = w*(1.3 + r2()*.3);
+    s.scale.set(ww, top - (TOP - 60), 1); s.position.set(x, TOP - 60, z); nearTowers.add(s); NEAR.push({ g:s, z0:z });
+  } }
+nearTowers.visible = false;
+
 const tgt = new THREE.Vector3(0,-6,22);
   function update(t, cam, SPEED, shot){
     // svět ubíhá dozadu (+z)
@@ -168,9 +185,11 @@ const tgt = new THREE.Vector3(0,-6,22);
     sky.material.uniforms.drift.value = t*.004;
     PUFFS.forEach(p => { let z = p.z0 + t*SPEED; z = ((z + 4000) % 8000 + 8000) % 8000 - 4000; p.g.position.z = z; });
     TOW.forEach(p => { let z = p.z0 + t*SPEED*.98; z = ((z + 18000) % 36000 + 36000) % 36000 - 18000; p.g.position.z = z; });
+    nearTowers.visible = !!NEAR_SHOTS[shot];
+    if (nearTowers.visible) NEAR.forEach(p => { p.g.position.z = p.z0 + t*SPEED; });
     sun.target.position.copy(tgt); sun.position.copy(SUN_DIR).multiplyScalar(110).add(tgt);
     if (shot === 10){ sun.shadow.camera.left = sun.shadow.camera.bottom = -40; }
     vfxTick(t, cam, shot);   // 3D VFX (vfx.js), inicializováno líně z fuelOff()
   }
-  return { hemi, sun, sky, cloudMat, cloudSea, puffs, PUFFS, towers, update };
+  return { hemi, sun, sky, cloudMat, cloudSea, puffs, PUFFS, towers, nearTowers, update };
 }
