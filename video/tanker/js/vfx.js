@@ -64,7 +64,7 @@ function plumeMat(col, mode, r0, r1){
     transparent:true, depthWrite:false, fog:false, side:THREE.DoubleSide,
     uniforms:{ col:{ value:new THREE.Color(col) }, amp:{ value:0 }, scroll:{ value:0 }, mode:{ value:mode }, r0:{ value:r0 }, r1:{ value:r1 },
       L:{ value:1 }, wob:{ value:0 }, seed:{ value:0 }, time:{ value:0 }, shim:{ value:0 } },
-    vertexShader:`attribute float aSide; uniform float r0, r1, mode, L, wob, seed, time; varying vec2 vA; varying float vD;
+    vertexShader:`attribute float aSide; uniform float r0, r1, mode, L, wob, seed, time; varying vec2 vA; varying float vD; varying float vAl;
       void main(){ float u = uv.y; vA = vec2(aSide, u);
         vec3 ax = normalize((modelMatrix*vec4(0.,0.,1.,0.)).xyz);
         float m = u*L;
@@ -75,9 +75,9 @@ function plumeMat(col, mode, r0, r1){
         vec3 sd = cross(ax, tc); sd = length(sd) > 1e-4 ? normalize(sd) : vec3(1.,0.,0.);
         float w = mode < .5 ? mix(r0, r1, pow(u,.9)) : mix(r0, r1, pow(u,.62));
         wp.xyz += sd*aSide*w;
-        vD = length(cameraPosition - wp.xyz);
+        vD = length(cameraPosition - wp.xyz); vAl = abs(dot(ax, tc));
         gl_Position = projectionMatrix*viewMatrix*wp; }`,
-    fragmentShader:`uniform vec3 col; uniform float amp, scroll, mode, L, shim, seed; varying vec2 vA; varying float vD;
+    fragmentShader:`uniform vec3 col; uniform float amp, scroll, mode, L, shim, seed; varying vec2 vA; varying float vD; varying float vAl;
       float h(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float n(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
       void main(){
@@ -86,8 +86,10 @@ function plumeMat(col, mode, r0, r1){
           float w = n(vec2(x*2.5, u*9. - scroll*3.)) * n(vec2(x*1.5+3., u*5. - scroll*2.2));
           a = (1.-x*x) * smoothstep(0.,.06,u) * (1.-smoothstep(.3,1.,u)) * (.3 + w*1.2);
           float sh = n(vec2(x*5. + sin(u*14. - scroll*5.)*1.2, u*26. - scroll*6.));
-          a *= mix(1., .45 + sh*1.1, shim);
-          c = mix(col, vec3(.86,.88,.92), shim*smoothstep(.45,.85,sh)*.7);
+          // shim>0 (F-16): only a dark, faint shimmer – no light streaks; fades when viewed along the axis (ribbon degenerates)
+          a *= mix(1., .3 + sh*.7, shim);
+          a *= mix(1., (1.-smoothstep(.55,.85,vAl)) * smoothstep(.02,.12,u), shim);
+          c = mix(col, col*.8, shim*sh);
         } else {          // kondenzační stopa: tvoří se ~12 m za motorem, rozšiřuje se, chuchvalcovitě se rozpadá a mizí
           float m = u*L - scroll;      // metry ve vzduchu (stopa stojí ve vzduchu, letadlo ujíždí)
           float n1 = n(vec2(x*2.2 + seed, m/9.)), n2 = n(vec2(x*4.5 + seed*3., m/3.2)), n3 = n(vec2(x*1.3, m/30. + seed));
@@ -170,7 +172,7 @@ export function vfxInit(T, F){
   });
   const fN = F.nozzleExit ? F.nozzleExit.clone() : F.NOZZLE ? F.NOZZLE.clone() : new THREE.Vector3(0,-.05,8.0);
   { // F-16: žár o průměru ≥ 1.2× trysky (Ø ~1.1 m), světlejší a tetelivý, aby se četl proti tankeru i obloze
-    const hm = plumeMat(0x6a6e78, 0, 0, 0), h = tube(.68, 1.9, 13, hm); hm.uniforms.shim.value = 1; h.position.copy(fN).add(new THREE.Vector3(0,0,.05)); F.fighter.add(h); V.fHaze = h;
+    const hm = plumeMat(0x4c5059, 0, 0, 0), h = tube(.55, 1.5, 9, hm); hm.uniforms.shim.value = 1; h.position.copy(fN).add(new THREE.Vector3(0,0,.05)); F.fighter.add(h); V.fHaze = h;
     const cm = plumeMat(0xf4f6fa, 1, 0, 0), c = tube(.25, 5, 360, cm); cm.uniforms.seed.value = 9.1; cm.uniforms.wob.value = 1.5;
     c.position.copy(fN).add(new THREE.Vector3(0,0,10)); F.fighter.add(c); V.fTrail = c; }
   // --- kontakt: jádro, jiskry, mlha, prstenec ---
@@ -211,7 +213,7 @@ export function vfxTick(t, cam, shot){
   // žár + stopy
   const ct = VFX.contrail[shot] ?? 0, fct = VFX.fContrail[shot] ?? 0;
   V.haze.forEach((h,i) => { h.material.uniforms.amp.value = .55*VFX.haze; h.material.uniforms.scroll.value = t*6 + i*1.7; h.visible = shot !== 5 && shot !== 8; });
-  V.fHaze.material.uniforms.amp.value = .9*VFX.haze; V.fHaze.material.uniforms.scroll.value = t*7; V.fHaze.visible = F.fighter.visible && shot !== 8;
+  V.fHaze.material.uniforms.amp.value = .42*VFX.haze; V.fHaze.material.uniforms.scroll.value = t*7; V.fHaze.visible = F.fighter.visible && shot !== 8;
   V.trails.forEach((c,i) => { const u = c.material.uniforms; c.visible = ct > 0; u.amp.value = .95*ct; u.scroll.value = t*150; u.time.value = t; });
   { const u = V.fTrail.material.uniforms; V.fTrail.visible = fct > 0; u.amp.value = .9*fct; u.scroll.value = t*150; u.time.value = t; }
 
