@@ -20,7 +20,7 @@ Render: `node render.js <outdir> [t1,t2,…]` → `window.render(t)` per frame, 
 ## js/env.js – `buildEnv(scene)` →
 `hemi, sun` (sun casts shadow, dir = exported `SUN_DIR`, follows target (0,−6,22)), `sky` (gradient + sun halo + cirrus; uniform `drift`),
 `cloudMat`/`cloudSea` (cumulus deck: height-field ray-march, top y = −520, base −720, gaps show lower layer at −1700; uniforms `off`, `camPos`, `cov` coverage),
-`puffs` group (now empty, kept for API) + `PUFFS[]`, `towers` (distant towering cumulus sprites), `update(t, cam, SPEED, shot)` (cloud offset, wrap, sun follow, **calls `vfxTick`**).
+`puffs` group (now empty, kept for API) + `PUFFS[]`, `towers` (distant towering cumulus sprites), `nearTowers` (S3 only: mid/foreground cumulus towers below the tanker streaming +z at SPEED; layout `NEAR_LAYOUT` in env.js, laid out for the S3 camera at t 7.4), `update(t, cam, SPEED, shot)` (cloud offset, wrap, sun follow, **calls `vfxTick`**).
 `scene.fog` (haze, 2.5–21 km) affects only cloud sprites. Post shader (scene.html): luma Bayer `L`=10 + chroma `CQ`=28, `SAT` 1.16, S-curve, warm highlights / cool shadows.
 
 ## js/tanker.js – `buildTanker(scene)` → (adds `tanker` to scene)
@@ -50,6 +50,7 @@ Constants `CONTACT_T = 20.62`, `DISCONNECT_T = 25.2`.
 sun glints (canopy, boom nozzle). `vfxTick(t, cam, shot)` animates them. **Already auto-wired**: `fuelOff` lazily calls `vfxInit`, `env.update` calls `vfxTick` –
 the timeline needs no change. Per-shot strengths in exported `VFX` (`VFX.contrail[shot]` tanker contrails: S3 .35, S10 1; `VFX.fContrail[shot]` F-16 S9 .55;
 `VFX.haze`; `VFX.glint[shot]` 0 in S5/S8). Contact effects only render in shot 7, disconnect only in shot 9.
+v3 fix: contrails start 12 m behind each of the 4 CFM56 exits (analytic positions; `T.exhausts` used if present), widen 0.3→4.2 m, wobble, break up and fade (also fade within ~75 m of the camera). F-16 haze amp .9, light shimmer 0x6a6e78, Ø ≥ 1.2× nozzle (`F.NOZZLE`). S8: `fuelFill(t)` (= FUEL % plate curve) → `F.setFuel(p)` if present, else fTanks scaling; glowing amber stream (additive points, no depth test) boom → nozzle → RECEPT → `FPATHS` (computed in vfxTick). Disconnect: ~0.35 s fuel-mist burst + drops from the nozzle, swept back, gone by ~1.2 s.
 Optional handles used if present: `T.exhausts` (Object3D[] at engine exits, else found by exhaust-cone geometry / analytic fallback), `F.nozzleExit` (Vector3, fighter-local; default (0,−.05,8)).
 
 ### TODO for cameraman

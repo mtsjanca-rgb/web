@@ -6,7 +6,11 @@ import * as THREE from "../lib/three.module.js";
 import { cl, P, io, oc, W } from "./helpers.js";
 import { contactBurst, fuelOff, fuelFlow } from "./vfx.js";
 
-export const SPEED = 150; // m/s ≈ 540 km/h
+export const SPEED = 150;
+let S3=[18,28,92,88,-42,-36,445,860];
+let FX=0, FY=-3, FZ=5;
+let AZ0=-62, AZ1=-38, R0=15, R1=7.5, Y0=-3, Y1=-.5, PX1=540, PY1=820, RL0=28, RL1=16;
+export function _tune(o){ AZ0=o.AZ0??AZ0; AZ1=o.AZ1??AZ1; R0=o.R0??R0; R1=o.R1??R1; Y0=o.Y0??Y0; Y1=o.Y1??Y1; PX1=o.PX1??PX1; PY1=o.PY1??PY1; } // m/s ≈ 540 km/h
 
 // cam: PerspectiveCamera; T = buildTanker() handles; F = buildFighter() handles; U = buildUI() handles
 export function createTimeline(cam, T, F, U){
@@ -52,11 +56,11 @@ function scenePose(t){
     aim(F.clone().lerp(V3(-1, -2, 4), .25 + .3*ks), 540, 960 - 30*ks);
   } else if (t < 9.3){                        // S3 tanker zepředu-zdola, pomalý oblet
     shot = 3; const k = (t-5.45)/3.85, ks = io(k);
-    fighter.position.set(-6, -16, 72).add(bob);
+    fighter.position.set(30, -20, 95).add(bob);
     cam.fov = 40;
-    const az = (34 + 14*ks)*Math.PI/180, r = 96 - 4*ks;
-    cam.position.set(-Math.sin(az)*r, -13 + ks*4, -Math.cos(az)*r);
-    aim(V3(0, -1, 3), 540, 900);
+    const az = (S3[0] + (S3[1]-S3[0])*ks)*Math.PI/180, r = S3[2] - (S3[2]-S3[3])*ks;
+    cam.position.set(-Math.sin(az)*r, S3[4] + (S3[5]-S3[4])*ks, -Math.cos(az)*r);
+    aim(V3(0, -1, 1), S3[6], S3[7]);
   } else if (t < 12.45){                      // S4 stíhačka se přisune zboku pod ocas
     shot = 4; const k = io(P(t, 9.3, 2.9)), kc = (t-9.3)/3.15;
     const from = V3(-1.5, -14.5, 49), to = CONTACT_POS.clone().add(V3(0,-.9,3.0));
@@ -79,15 +83,18 @@ function scenePose(t){
     aim(W(pod, V3(0,-.4,-.25)), 520 - 70*ks, 760);
   } else if (t < 18.7){                       // S6 tyč s křidélky – oblet kolem ruddevatorů
     shot = 6; const k = (t-15.55)/3.15, ks = io(k);
-    fighter.position.copy(CONTACT_POS).add(V3(0,-.6,2.0)).add(bob.multiplyScalar(.4));
+    fighter.position.copy(CONTACT_POS).add(V3(FX,FY,FZ)).add(bob.multiplyScalar(.4));
     bAng = .45 + Math.sin(k*Math.PI*1.5)*.05 + k*.04; bYaw = Math.sin(k*Math.PI*2)*.06;
-    rudds.forEach((r,i)=> r.rotation.x = Math.sin(t*3.2 + i)*.35);
+    rudds.forEach((r,i)=> r.rotation.x = Math.sin(t*4 + i*1.3)*.35);
     setBoom(bAng, 0, bYaw); boom.updateMatrixWorld(true);
-    const RD = W(boom, V3(0,0,9.6));
-    const az = (-75 + 45*ks)*Math.PI/180, r = 15 - 7.5*ks;
+    const RD = W(boom, V3(0,0,9.6)), BM = W(boom, V3(0,0,7.2));
+    // A (15.55–17.4) boční profil celé tyče (závěs → tryska) se stíhačkou pod ní; B (17.45–18.7) šikmo k ose tyče na křidélka
+    const A = io(P(t, 15.55, 1.9)), B = io(P(t, 16.75, 1.9));
+    const az = (AZ0 + 5*A + (AZ1-AZ0-5)*B)*Math.PI/180, r = R0 - 2*A - (R0-2-R1)*B;
     cam.fov = 44;
-    cam.position.set(RD.x + Math.sin(az)*r, RD.y - 2.2 + ks*.6, RD.z + Math.cos(az)*r);
-    aim(RD.clone().lerp(W(boom, V3(0,0,6.5)), 1 - ks), 560, 900);
+    cam.position.set(RD.x + Math.sin(az)*r, RD.y + Y0 + (Y1-Y0)*B, RD.z + Math.cos(az)*r);
+    aim(BM.clone().lerp(RD, B), 310 + (PX1-310)*B, 690 + (PY1-690)*B);
+    cam.rotateZ((RL0 + (RL1-RL0)*B)*Math.PI/180);
   } else if (t < 21.7){                       // S7 zasunutí do zásuvky
     shot = 7; const k = (t-18.7)/3.0, ks = io(k);
     const approach = io(P(t, 18.7, 1.2));
@@ -150,16 +157,17 @@ function drawUI(t, shot){
   if (shot === 1){ plate(["FUEL","LOW"], 290, 300, fa(.5), pr(W(fighter, new THREE.Vector3(0,.9,-1.2))), { blinkIdx:1, blinkOff: Math.floor(t*3)%2===1 }); }
   if (shot === 2){ plate(["TANKER"], 300, 280, fa(3.6), pr(W(tanker, new THREE.Vector3(0,-1.5,-2)))); }
   if (shot === 3){ plate(["KC-135","STRATOTANKER"], 330, 280, fa(5.9), pr(W(tanker, new THREE.Vector3(0,.5,-6))));
-                   plate(["SPEED", Math.round(320 + 217*oc(P(t,6.6,1.05))) + " KM/H"], 330, 1150, fa(6.5)); }
+                   plate(["SPEED", Math.round(320 + 217*oc(P(t,6.6,1.05))) + " KM/H"], 770, 300, fa(6.5)); }
   if (shot === 4){ plate(["F-16","RECEIVER"], 300, 280, fa(9.7), pr(W(fighter, new THREE.Vector3(0,.8,-2.5)))); }
   if (shot === 5){ plate(["BOOM","OPERATOR"], 300, 260, fa(13.2), pr(W(op, new THREE.Vector3(0,.12,.5))));
                    plate(["WINDOW"], 780, 1140, fa(14.5), pr(W(podWin, new THREE.Vector3(0,-.15,0)))); }
-  if (shot === 6){ plate(["FLYING","BOOM"], 290, 280, fa(16.2), pr(W(boom, new THREE.Vector3(0,0,5.5))));
-                   plate(["LITTLE","WINGS"], 790, 300, fa(17.45), pr(W(rudds[0], new THREE.Vector3(-.9,0,.1)))); }
+  if (shot === 6){ plate(["FLYING","BOOM"], 790, 400, fa(16.2), pr(W(boom, new THREE.Vector3(0,0,5.5))));
+                   plate(["LITTLE","WINGS"], 290, 1000, fa(17.45), pr(W(rudds[0], new THREE.Vector3(-1.1,0,.15)))); }
   if (shot === 7){ const R = pr(W(fighter, RECEPT)); plate(["RECEPTACLE"], 720, 280, fa(19.5), R); contactBurst(U.cx, t, R); }
   if (shot === 8){ plate(["FUEL FLOW","~2.7 T/MIN"], 300, 250, fa(22.2), pr(W(boom, new THREE.Vector3(0,0,13.2))));
                    plate(["FUEL", Math.round(15 + 85*cl((t-22)/2.8)) + " %"], 810, 470, fa(22.4), pr(W(fighter, new THREE.Vector3(2.4,0,1.6)))); }
   if (shot === 9){ plate(["FUEL","FULL"], 760, 280, fa(26.85), pr(W(fighter, new THREE.Vector3(0,1.25,-3.1)))); }
 }
+globalThis.__tl = { pose, cam, T, F, proj, W, THREE }; // DEBUG probe hook
 return { pose, scenePose, drawUI, aim, CONTACT_POS };
 }

@@ -333,17 +333,30 @@ const nozzleTip = new THREE.Object3D(); boom.add(nozzleTip);
 // světlo na konci vnější trubky (boom nozzle light)
 mesh(new THREE.BoxGeometry(.1,.05,.14), new THREE.MeshBasicMaterial({ color:0xfff4d8 }), boom, 0,-.33,11.95);
 const rudds = [];
-for (const sx of [-1,1]){
-  const r = new THREE.Group(); r.position.set(0,0,9.6); boom.add(r);
-  const st = tipCap(stations(.3, 1.92, .2, [1.7,1.74], s => -.42 + (s-.3)*.2, s => 1.0 - (s-.3)*.24, s => .11 - .05*(s-.3)/1.62), .07);
-  mesh(surf(st, (s,z,v) => [sx*s, v, z], (s,f,sd,c) => {
-    c.setHex(0xaeb5bd); let m = 1;
-    if (f >= .73 && f <= .77) m *= .8; else if (f > .77) m *= .93;
-    if (s > 1.72) c.setHex(0x3a3e45);
-    if (f < .03) m *= 1.06;
-    c.multiplyScalar(m);
-  }), TVC, r);
-  r.rotation.z = sx*.75; rudds.push(r);
+{
+  // ruddevatory: tmavě šedé (odliší se od pruhované tyče i oblohy), žlutý pás na konci, světlá náběžná hrana, spára kormidla,
+  // kořenová kapotáž se závěsem. Rozpětí 0.3→2.1 m od osy tyče, hloubka 1.15→0.74 m, profil ~12 %.
+  const BASE = 0x3a3f48, LEH = 0xa7b0ba, HINGE = 0x1d2127, FLAP = 0x464c56, TIP = 0xf0c430;
+  const S1 = 2.1;
+  for (const sx of [-1,1]){
+    const r = new THREE.Group(); r.position.set(0,0,9.6); boom.add(r);
+    const st = tipCap(stations(.3, S1, .18, [1.8,1.84], s => -.5 + (s-.3)*.24, s => 1.15 - (s-.3)*.23, s => .14 - .06*(s-.3)/1.8), .08);
+    mesh(surf(st, (s,z,v) => [sx*s, v, z], (s,f,sd,c) => {
+      c.setHex(BASE); let m = 1;
+      if (f < .045) c.setHex(LEH);                                   // tenká světlá náběžná hrana
+      else if (f >= .7 && f <= .74) c.setHex(HINGE);                 // spára závěsu kormidla
+      else if (f > .74) c.setHex(FLAP);
+      if (s > 1.82) c.setHex(f < .045 ? 0xffe27a : TIP);             // žlutý konec (výstražný pás)
+      if (s > 1.79 && s <= 1.82) c.setHex(0x16191d);                 // tmavá linka před pásem (kontrast)
+      if (sd < 0) m *= .82;                                          // spodní strana tmavší
+      c.multiplyScalar(m);
+    }), TVC, r);
+    // kořenová kapotáž na boku tyče + závěsný kryt
+    mesh(colorize(loft([[-.7,0,.01,.01,sx*.43],[-.55,0,.07,.1,sx*.43],[-.2,0,.1,.135,sx*.44],[.45,0,.1,.13,sx*.44],[.85,0,.06,.07,sx*.43],[1.0,0,.01,.01,sx*.42]], 16),
+      (x,y,z,nx,ny,nz,c) => { c.setHex(0x2d3138); if (ny > .5) c.multiplyScalar(1.25); }), TVC, r);
+    mesh(colorize(new THREE.CylinderGeometry(.035,.035,.5,10).rotateZ(Math.PI/2).translate(sx*.7, 0, .33), (x,y,z,nx,ny,nz,c) => c.setHex(0x23272d)), TVC, r);
+    r.rotation.z = sx*.75; rudds.push(r);
+  }
 }
 // fuel "x-ray" částice
 const fuelDots = []; const fuelMat = new THREE.MeshBasicMaterial({ color:0xffb347 });

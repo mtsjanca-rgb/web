@@ -165,7 +165,7 @@ const canRing = (z, grow=0, a0=-.08, a1=Math.PI+.08, n=30) => { const [b,w,h] = 
 let canopy;
 {
   const zs = []; for (let z=-5.35; z<-1.95; z += .1) zs.push(z); zs.push(-1.95);
-  const canopyM = new THREE.MeshStandardMaterial({ color:0xf0d896, transparent:true, opacity:.2, roughness:.12, metalness:0, depthWrite:false, emissive:0x1c1404 });
+  const canopyM = new THREE.MeshStandardMaterial({ color:0xf0d896, transparent:true, opacity:.13, roughness:.12, metalness:0, depthWrite:false, emissive:0x0c0902 });
   canopy = geoM(tube(zs.map(z=>canRing(z)), 2, [false,false], false), canopyM); canopy.renderOrder = 4; canopy.castShadow = false;
   // zadní rám kabiny + parapety (šedé, ne černé)
   const frameM = LM(0x656b73);
@@ -190,43 +190,52 @@ let canopy;
 const pilot = new THREE.Group();
 {
   const seat = new THREE.Group(); seat.position.set(0,.42,-2.6); seat.rotation.x = .3; fighter.add(seat);
-  const sM = LM(0x34382f), sD = LM(0x24272a);
+  const sM = LM(0x2e3236), sD = LM(0x1d2023);
   geoM(new THREE.BoxGeometry(.42,.62,.12), sM, seat, 0,.31,.09);              // opěradlo
-  geoM(new THREE.BoxGeometry(.4,.24,.2), LM(0x3e4337), seat, 0,.75,.09);      // opěrka hlavy / padák
-  geoM(new THREE.BoxGeometry(.2,.13,.04), LM(0x5a5f52), seat, 0,.72,-.02);
+  geoM(new THREE.BoxGeometry(.4,.26,.2), LM(0x26292c), seat, 0,.76,.1);       // opěrka hlavy / padák (tmavá → helma vynikne)
   for (const sx of [-1,1]) geoM(new THREE.BoxGeometry(.04,.9,.09), sD, seat, sx*.23,.42,.13);
   geoM(new THREE.BoxGeometry(.44,.1,.46), sM, seat, 0,-.03,-.2);
-  const yel = geoM(new THREE.TorusGeometry(.045,.012,5,10), LM(0xd8b21c), seat, 0,.05,-.44); yel.rotation.x = Math.PI/2;
+  const yel = geoM(new THREE.TorusGeometry(.05,.014,5,10), LM(0xe8c21c), seat, 0,.05,-.44); yel.rotation.x = Math.PI/2;
+  for (const sx of [-1,1]){ const h = geoM(new THREE.TorusGeometry(.04,.012,5,8,Math.PI), LM(0xe8c21c), seat, sx*.24,.0,-.36); h.rotation.y = Math.PI/2; }
   seat.add(pilot);
-  const suit = LM(0x6d7357), vest = LM(0x454a3b), strap = LM(0x2b2e27), glove = LM(0x8a8266);
+  // CWU-27/P (světlejší šalvějová), G-oblek (tmavší khaki), vesta (tmavá), postroj (světlý popruh – kontrast)
+  const suit = LM(0x7f8a68), gsuit = LM(0x5e5a44), vest = LM(0x32372c), strap = LM(0xd2cba8), buckle = LM(0x9ea3a6), glove = LM(0x2a2724);
   // trup (zužující se), vesta, popruhy
-  const torso = new THREE.LatheGeometry([[0,0],[.15,0],[.165,.08],[.15,.2],[.165,.34],[.185,.46],[.17,.53],[.12,.585],[.05,.6],[0,.6]].map(p=>V2(...p)), 14);
-  geoM(torso, suit, pilot, 0,.03,-.11).scale.set(1.3,1,.78);
-  const vg = new THREE.LatheGeometry([[.168,.22],[.18,.34],[.195,.46],[.18,.52],[.1,.55]].map(p=>V2(...p)), 14);
-  geoM(vg, vest, pilot, 0,.03,-.11).scale.set(1.3,1,.8);
-  for (const sx of [-1,1]){ geoM(new THREE.BoxGeometry(.045,.42,.02), strap, pilot, sx*.085,.36,-.27).rotation.z = sx*.08; }
-  geoM(new THREE.BoxGeometry(.3,.05,.03), strap, pilot, 0,.14,-.25);
-  geoM(new THREE.BoxGeometry(.07,.06,.02), LM(0xa9aba2), pilot, 0,.3,-.285);
-  // ramena, krk
-  for (const sx of [-1,1]) geoM(new THREE.SphereGeometry(.078,10,8), suit, pilot, sx*.205,.54,-.11);
-  geoM(new THREE.CylinderGeometry(.055,.06,.1,10), LM(0x5d614e), pilot, 0,.64,-.1);
-  // helma HGU-55 + tmavé hledí + kryt hledí + kyslíková maska s hadicí
-  const head = new THREE.Group(); head.position.set(0,.78,-.1); pilot.add(head);
-  geoM(new THREE.SphereGeometry(.145,18,14), LM(0xeceeea, { roughness:.5 }), head).scale.set(.94,1.0,1.1);
-  const visor = geoM(new THREE.SphereGeometry(.152,18,10, Math.PI*1.5-1.15, 2.3, .78, .85),
-                     new THREE.MeshStandardMaterial({ color:0x161b22, roughness:.3, metalness:0 }), head); visor.scale.set(.94,1.0,1.1);
-  const vh = geoM(new THREE.SphereGeometry(.158,18,6, Math.PI*1.5-1.1, 2.2, .42, .36), LM(0xb9bdbf), head); vh.scale.set(.94,1.0,1.1);
-  rod([0,-.06,-.12],[0,-.1,-.22],.06, LM(0x5e6356), head, .035);
-  rod([0,-.12,-.2],[.03,-.3,-.2],.016, LM(0x494b45), head);
-  rod([.03,-.3,-.2],[.05,-.42,-.17],.016, LM(0x494b45), head);
-  // paže (dvoudílné) → páka vpravo, plyn vlevo; stehna
+  const torso = new THREE.LatheGeometry([[0,0],[.15,0],[.165,.08],[.15,.2],[.165,.34],[.19,.46],[.175,.53],[.12,.585],[.05,.6],[0,.6]].map(p=>V2(...p)), 16);
+  geoM(torso, suit, pilot, 0,.03,-.11).scale.set(1.32,1,.8);
+  const vg = new THREE.LatheGeometry([[.172,.16],[.185,.3],[.2,.44],[.185,.52],[.1,.56]].map(p=>V2(...p)), 16);
+  geoM(vg, vest, pilot, 0,.03,-.11).scale.set(1.32,1,.84);
+  // ramenní popruhy přes ramena + pásy přes boky, přezky na hrudi
   for (const sx of [-1,1]){
-    const sh = [sx*.215,.5,-.11], el = [sx*.25,.24,-.27], ha = [sx*.28,.06,-.53];
-    rod(sh, el, .058, suit, pilot, .05); rod(el, ha, .05, suit, pilot, .042);
+    geoM(new THREE.BoxGeometry(.065,.36,.03), strap, pilot, sx*.09,.38,-.268).rotation.z = sx*.1;
+    geoM(new THREE.BoxGeometry(.055,.03,.2), strap, pilot, sx*.11,.575,-.17).rotation.x = -.3;
+    geoM(new THREE.BoxGeometry(.05,.03,.03), buckle, pilot, sx*.08,.3,-.285);
+  }
+  geoM(new THREE.BoxGeometry(.34,.05,.03), strap, pilot, 0,.13,-.255);
+  geoM(new THREE.BoxGeometry(.08,.07,.025), buckle, pilot, 0,.13,-.275);
+  // ramena (výrazná), krk
+  for (const sx of [-1,1]) geoM(new THREE.SphereGeometry(.085,12,10), suit, pilot, sx*.21,.53,-.11);
+  geoM(new THREE.CylinderGeometry(.055,.06,.1,10), LM(0x5d614e), pilot, 0,.64,-.1);
+  // helma HGU-55 (bílá, větší) + černé hledí + šedý kryt hledí + kyslíková maska MBU-20 s hadicí
+  const head = new THREE.Group(); head.position.set(0,.79,-.1); pilot.add(head);
+  geoM(new THREE.SphereGeometry(.158,20,16), LM(0xf6f7f4, { roughness:.4 }), head).scale.set(.94,1.0,1.08);
+  const visor = geoM(new THREE.SphereGeometry(.166,20,10, Math.PI*1.5-1.45, 2.9, .7, .95),
+                     new THREE.MeshStandardMaterial({ color:0x07090c, roughness:.18, metalness:0 }), head); visor.scale.set(.94,1.0,1.08);
+  const vh = geoM(new THREE.SphereGeometry(.172,18,6, Math.PI*1.5-1.1, 2.2, .4, .34), LM(0x8d9398), head); vh.scale.set(.94,1.0,1.08);
+  const mask = geoM(new THREE.SphereGeometry(.075,12,10), LM(0x434a44), head, 0,-.1,-.13); mask.scale.set(.9,1.0,1.15);
+  rod([0,-.11,-.2],[0,-.14,-.26],.035, LM(0x3b3f43), head, .028);                          // ventil masky
+  rod([0,-.15,-.25],[.05,-.32,-.2],.022, LM(0x1c1e20), head);                               // hadice
+  rod([.05,-.32,-.2],[.08,-.46,-.14],.022, LM(0x1c1e20), head);
+  for (const sx of [-1,1]) geoM(new THREE.BoxGeometry(.012,.07,.03), LM(0x2a2c2e), head, sx*.115,-.06,-.07); // přezky masky
+  // paže (dvoudílné) → páka vpravo, plyn vlevo; stehna v G-obleku
+  for (const sx of [-1,1]){
+    const sh = [sx*.22,.5,-.11], el = [sx*.26,.24,-.27], ha = [sx*.28,.06,-.53];
+    rod(sh, el, .062, suit, pilot, .054); rod(el, ha, .052, suit, pilot, .044);
     geoM(new THREE.SphereGeometry(.05,10,8), glove, pilot, ...ha);
-    geoM(new THREE.SphereGeometry(.06,10,8), suit, pilot, ...el);
-    rod([sx*.1,.06,-.15],[sx*.12,.1,-.6],.085, suit, pilot, .07);
-    rod([sx*.12,.1,-.6],[sx*.13,-.25,-.82],.062, suit, pilot, .05);
+    geoM(new THREE.SphereGeometry(.062,10,8), suit, pilot, ...el);
+    rod([sx*.1,.06,-.15],[sx*.12,.1,-.6],.092, gsuit, pilot, .076);
+    rod([sx*.12,.1,-.6],[sx*.13,-.25,-.82],.066, gsuit, pilot, .052);
+    geoM(new THREE.BoxGeometry(.05,.06,.18), LM(0x47442f), pilot, sx*.2,.1,-.4);             // kapsy G-obleku
   }
 }
 // ================= ZÁSUVKA (hřbet za kabinou) =================
@@ -377,22 +386,96 @@ for (const sx of [-1,1]){
     fDecals.forEach(d=>d.castShadow = false);
   }
 }
-// ================= NÁDRŽE (rentgen, viditelné jen v S8/S9): trup přední/zadní + 2 křídelní =================
+// ================= NÁDRŽE (rentgen, viditelné jen v S8): skutečná místa palivových nádrží F-16 =================
+// F-1/F-2 přední trupová (za kabinou nad sáním), A-1 zadní trupová (nad motorem), 2 křídelní (vnitřní část křídla),
+// 2 přídavné 370gal. Každá: tmavý vnitřek (BackSide) + kapalina (hladina = rovina kolmá na LEVEL_AX, discard nad ní;
+// zadní stěny pod hladinou = povrch hladiny) + světlý obrys (inverted hull). Hladina čte fl.scale.z (vfx.fuelFlow) nebo setFuel(p).
+const LEVEL_AX = new THREE.Vector3(0, 1, .85).normalize();   // stoupá zdola a od ocasu (palivo se při náklonu nosem vzhůru hromadí vzadu)
+let fuelSet = 0;
+function setFuel(p){ fuelSet = cl(p); fTanks.forEach(K => K.sh.visible = true); }   // volá vfx.fuelFlow každý snímek S8 (fuelOff je skryje)
+const OUTV = `uniform float wpx; void main(){ vec4 mv = modelViewMatrix*vec4(position,1.); vec3 n = normalize(normalMatrix*normal);
+  mv.xyz += n*wpx*max(.5,-mv.z); gl_Position = projectionMatrix*mv; }`;
+const outlineMat = (hex, w=.0024) => new THREE.ShaderMaterial({ side:THREE.BackSide, uniforms:{ c:{ value:new THREE.Color(hex) }, wpx:{ value:w } }, vertexShader:OUTV,
+  fragmentShader:`uniform vec3 c; void main(){ gl_FragColor = vec4(c,1.);
+#include <colorspace_fragment>
+}` });
 {
-  const shellM = new THREE.MeshBasicMaterial({ color:0x0b1830, side:THREE.BackSide }), fillM = new THREE.MeshBasicMaterial({ color:0xffb040, transparent:true, opacity:.95, depthWrite:false });
-  for (const [x,y,z,w,h,l] of [[0,.25,-1.4,.9,.75,1.6],[0,.2,1.6,1.1,.75,3.0],[-2.4,-.05,1.6,1.7,.16,1.9],[2.4,-.05,1.6,1.7,.16,1.9]]){
-    const sh = mesh(new THREE.BoxGeometry(w,h,l), shellM, fighter, x,y,z); sh.castShadow = false;
-    const fl = mesh(new THREE.BoxGeometry(w*.86,h*.82,1), fillM, fighter, x,y,z); fl.castShadow = false; fl.renderOrder = 10;
-    sh.visible = fl.visible = false; fTanks.push({ sh, fl, z0: z - l/2, l: l*.92 });
-  }
+  const shellM = new THREE.ShaderMaterial({ side:THREE.BackSide,
+    vertexShader:`varying vec3 vN; void main(){ vN = normalize(normalMatrix*normal); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+    fragmentShader:`varying vec3 vN; void main(){ float k = .55+.45*abs(vN.z); gl_FragColor = vec4(vec3(.035,.07,.15)*k*1.6,1.);
+#include <colorspace_fragment>
+}` });
+  const tOut = outlineMat(0xffd27a, .0021);
+  const ring = (z, cx, cy, hw, hh, e=3.2, n=32) => { const r = []; for (let i=0;i<n;i++){ const a = i/n*Math.PI*2, c = Math.cos(a), s = Math.sin(a);
+    r.push([cx + hw*sp(c,2/e), cy + hh*sp(s,2/e), z]); } return r; };
+  const loftT = (rows) => { const f = curve(rows), zs = []; for (let z=rows[0][0]; z<rows[rows.length-1][0]; z+=.08) zs.push(z); zs.push(rows[rows.length-1][0]);
+    return tube(zs.map(z=>{ const [cy,hw,hh] = f(z); return ring(z, 0, cy, Math.max(.02,hw), Math.max(.02,hh)); }), 2, [true,true]); };
+  const geos = [];
+  // přední trupová F-1/F-2: z −2.15…−0.15 (nad sáním, pod hřbetem a zásuvkou)
+  geos.push(loftT([[-2.15,.14,.05,.05],[-2.0,.14,.42,.3],[-1.6,.13,.56,.4],[-.8,.12,.62,.44],[-.35,.12,.62,.44],[-.15,.12,.3,.25]]));
+  // zadní trupová A-1: z 0.15…2.7 (nad motorem)
+  geos.push(loftT([[.15,.3,.05,.05],[.3,.3,.5,.36],[.9,.28,.7,.42],[1.9,.26,.7,.42],[2.5,.26,.55,.34],[2.7,.26,.06,.06]]));
+  // křídelní integrální nádrže (klín uvnitř křídla, mezi nosníky)
+  const WT = { ...WING, t:s=>(.045-.012*s)*.82 };
+  const wg = aero(WT, .1, .68, .04, .45, { caps:[true,true], nc:8, ns:6 }); wg.translate(0,.004,0);
+  geos.push(mirrorX(wg), wg);
+  // 370gal přídavné nádrže (stejný tvar jako lathe pláště, menší)
+  const tp = [V2(0,-2.12),V2(.15,-1.98),V2(.25,-1.62),V2(.3,-1.15),V2(.31,-.6),V2(.31,.6)];
+  for (let i=1;i<=8;i++){ const u = i/8; tp.push(V2(.31*Math.pow(1-u*u,.62)+.001, .6+u*1.55)); }
+  for (const sx of [-1,1]) geos.push(new THREE.LatheGeometry(tp, 20).rotateX(-Math.PI/2).translate(sx*2.15,-.78,1.15));
+  geos.forEach(g => {
+    g.computeVertexNormals(); g.computeBoundingBox();
+    // rozsah po ose hladiny
+    const P = g.attributes.position; let mn = 1e9, mx = -1e9; for (let i=0;i<P.count;i++){ const d = P.getX(i)*LEVEL_AX.x + P.getY(i)*LEVEL_AX.y + P.getZ(i)*LEVEL_AX.z; mn = Math.min(mn,d); mx = Math.max(mx,d); }
+    const U = { lv:{ value:mn }, ax:{ value:LEVEL_AX }, ph:{ value:0 } };
+    const fillM = new THREE.ShaderMaterial({ side:THREE.DoubleSide, uniforms:U,
+      vertexShader:`varying vec3 vL; varying vec3 vN; void main(){ vL = position; vN = normalize(normalMatrix*normal); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+      fragmentShader:`uniform float lv, ph; uniform vec3 ax; varying vec3 vL; varying vec3 vN;
+        void main(){ float d = dot(vL, ax); float w = .018*sin(vL.x*7.+vL.z*3.+ph) + .012*sin(vL.z*9.-ph*1.7);
+          float h = lv + w - d; if (h < 0.) discard;
+          vec3 c;
+          if (gl_FrontFacing){ float k = .72 + .38*abs(vN.z); c = vec3(1.,.55,.12)*k; c = mix(c, vec3(1.,.86,.45), smoothstep(.06,0.,h)); }
+          else { c = vec3(1.,.8,.36); }                        // hladina (vidíme zadní stěny pod ní)
+          gl_FragColor = vec4(c,1.);
+#include <colorspace_fragment>
+        }` });
+    const sh = new THREE.Group(); fighter.add(sh); sh.visible = false;
+    const shell = new THREE.Mesh(g, shellM), fillMesh = new THREE.Mesh(g, fillM), ol = new THREE.Mesh(g, tOut);
+    [shell, fillMesh, ol].forEach(m => { m.renderOrder = 1; m.castShadow = m.receiveShadow = false; sh.add(m); });
+    const fl = new THREE.Object3D(); fl.scale.z = 0; fl.visible = false; fighter.add(fl);   // proxy: vfx.fuelFlow píše scale.z = podíl
+    fillMesh.onBeforeRender = () => { const f = Math.max(fuelSet, cl(fl.scale.z)); U.lv.value = mn + (mx-mn)*(.03 + .97*f) + (f >= .999 ? .2 : 0); U.ph.value = f*40; };
+    const bb = g.boundingBox; fTanks.push({ sh, fl, z0: 0, l: 1, center: bb.getCenter(new THREE.Vector3()) });
+  });
 }
-// palivo uvnitř stíhačky: zásuvka → nádrže
-const fDots = []; const FPATHS = [[[0,1.0,-.6],[0,.5,-.8],[0,.3,-1.6]],[[0,1.0,-.6],[0,.4,0],[0,.3,1.8]],[[0,1.0,-.6],[0,.3,.4],[-1.0,.0,1.2],[-2.4,-.05,1.6]],[[0,1.0,-.6],[0,.3,.4],[1.0,.0,1.2],[2.4,-.05,1.6]]].map(p => p.map(a => new THREE.Vector3(...a)));
-for (let i=0;i<28;i++){ const d = new THREE.Mesh(new THREE.BoxGeometry(.16,.16,.16), new THREE.MeshBasicMaterial({ color:0xffe08a, transparent:true, depthWrite:false })); d.renderOrder = 11; d.visible = false; fighter.add(d); fDots.push(d); }
-const fSkin = []; fighter.traverse(o => { if (o.isMesh && !fTanks.some(T => T.sh===o || T.fl===o) && !fDots.includes(o)) fSkin.push([o, o.material]); });
-const fXray = new THREE.MeshBasicMaterial({ color:0x1d4a86, transparent:true, opacity:.42, depthWrite:false });
-function fighterXray(on){ fSkin.forEach(([o,m]) => { o.material = on ? fXray : m; o.castShadow = !on && !fDecals.includes(o) && o !== canopy && !fLights.includes(o); }); fDecals.forEach(d => d.visible = !on); }
+// palivo uvnitř stíhačky: zásuvka → nádrže (4 cesty: přední trupová, zadní trupová, levé a pravé křídlo)
+const fDots = []; const FPATHS = [[[0,1.0,-.6],[0,.75,-.75],[0,.35,-1.2]],[[0,1.0,-.6],[0,.75,-.2],[0,.45,.4],[0,.35,1.4]],
+  [[0,1.0,-.6],[0,.6,-.1],[-.6,.2,.6],[-1.6,.0,.9]],[[0,1.0,-.6],[0,.6,-.1],[.6,.2,.6],[1.6,.0,.9]]].map(p => p.map(a => new THREE.Vector3(...a)));
+for (let i=0;i<28;i++){ const d = new THREE.Mesh(new THREE.BoxGeometry(.14,.14,.14), new THREE.MeshBasicMaterial({ color:0xffe08a, transparent:true, depthWrite:false, depthTest:false })); d.renderOrder = 11; d.visible = false; fighter.add(d); fDots.push(d); }
+const fSkin = []; fighter.traverse(o => { if (o.isMesh && !fTanks.some(T => T.sh===o.parent) && !fDots.includes(o)) fSkin.push([o, o.material]); });
+// rentgen pláště: průsvitné plochy (dva tóny: horní světlejší) + fresnelový lem + neprůhledný obrys siluety (depth prepass + inverted hull)
+const fXray = new THREE.ShaderMaterial({ transparent:true, depthWrite:false,
+  uniforms:{ cA:{ value:new THREE.Color(0x1a3a6a) }, cU:{ value:new THREE.Color(0x3a6aa6) }, cB:{ value:new THREE.Color(0xbfe6ff) } },
+  vertexShader:`varying vec3 vN, vV; varying float vUp; void main(){ vec4 mv = modelViewMatrix*vec4(position,1.); vV = -mv.xyz; vN = normalMatrix*normal;
+    vUp = normalize((modelMatrix*vec4(normal,0.)).xyz).y; gl_Position = projectionMatrix*mv; }`,
+  fragmentShader:`uniform vec3 cA, cU, cB; varying vec3 vN, vV; varying float vUp;
+    void main(){ float f = 1. - abs(dot(normalize(vN), normalize(vV))); f = pow(f, 2.2);
+      vec3 c = mix(mix(cA, cU, smoothstep(-.2,.7,vUp)), cB, f); gl_FragColor = vec4(c, mix(.3, .92, f));
+#include <colorspace_fragment>
+    }` });
+const xPre = new THREE.MeshBasicMaterial({ colorWrite:false }), xOut = outlineMat(0xd8f0ff, .0026);
+const fXlines = [];
+{
+  const pilotSet = new Set(); pilot.traverse(o => pilotSet.add(o));
+  fSkin.forEach(([o]) => {
+    if (fLights.includes(o) || fDecals.includes(o) || pilotSet.has(o)) return;
+    if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+    const r = o.geometry.boundingSphere.radius * Math.max(o.scale.x, o.scale.y, o.scale.z); if (r < .3) return;
+    for (const [m, ro] of [[xPre, 2], [xOut, 3]]){ const c = new THREE.Mesh(o.geometry, m); c.position.copy(o.position); c.quaternion.copy(o.quaternion); c.scale.copy(o.scale);
+      c.renderOrder = ro; c.visible = false; c.castShadow = c.receiveShadow = false; o.parent.add(c); fXlines.push(c); }
+  });
+}
+function fighterXray(on){ fSkin.forEach(([o,m]) => { o.material = on ? fXray : m; o.castShadow = !on && !fDecals.includes(o) && o !== canopy && !fLights.includes(o); }); fDecals.forEach(d => d.visible = !on); fXlines.forEach(c => c.visible = on); }
 function pathPt(path, u){ const n = path.length-1, f = u*n, i = Math.min(n-1, Math.floor(f)); return path[i].clone().lerp(path[i+1], f-i); }
 
-return { fighter, recDoor, RECEPT, fTanks, fDots, FPATHS, pathPt, fSkin, fXray, fighterXray, VC, canopy, pilot, NOZZLE, fLights, fDecals };
+return { fighter, recDoor, RECEPT, fTanks, fDots, FPATHS, pathPt, fSkin, fXray, fighterXray, setFuel, fXlines, VC, canopy, pilot, NOZZLE, fLights, fDecals };
 }
