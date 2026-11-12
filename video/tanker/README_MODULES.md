@@ -29,6 +29,11 @@ Render: `node render.js <outdir> [t1,t2,…]` → `window.render(t)` per frame, 
 · `pod` (tanker-local (0,−1.15,15)) with `podHull` (mat reset to `tGrey`), `podCav`, `podWin` (window group), `podCut` (S5 cutaway, hidden by default)
 · `op` operator group (+ `opParts`) · `NAV` blinking lights · materials `tGrey, tGreyD, tDark, glass, TVC, boomMat, boomX, fuelMat`
 · `setBoom(ang, ext, yaw)`, `boomTipWorld(ang, ext)` → Vector3, `updateNav(t)`.
+  v3 notes: static airframe is baked (merged per material) into a few meshes under an internal group; `boomOuter` geometry is in boom-local
+  coords (mesh at boom origin, no rotation), `boomMat` uses vertex colours (stripes) – `boomX` swap still works; `boomInner`/`nozzle` geometry
+  runs along +z (no mesh rotation), positions still set only by `setBoom` (tip = boom z 12.9 + ext, unchanged). `podHull` children = side windows
+  (hidden with it in S5). `podCut` = far half of pod shell (double-sided, with window openings) + cut rim + consoles. `op` children live under
+  `op` and a `head` sub-group; all op meshes have receiveShadow = false (lit inside the cutaway). No new handles.
 
 ## js/fighter.js – `buildFighter(scene)` → (adds `fighter` to scene)
 `fighter` group · `recDoor` (hinge at (0,1.02,−.91), rotation.x 0→1.9 open) · `RECEPT` · `fTanks[{sh,fl,z0,l}]` x-ray tanks

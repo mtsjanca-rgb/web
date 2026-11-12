@@ -127,7 +127,7 @@ const SEAMS = [-19.5, -15.3, -12.7, -10.1, -7.5, -4.9, -2.3, .3, 2.9, 5.5, 8.1, 
     c.copy(BELLY).lerp(TOP, sm(-.3,.55,ny));
     let m = 1; const a = Math.atan2(y - fus(z).cy, x);
     if (z < -19.5) m *= .93;                                                 // radom
-    for (const s of SEAMS) if (Math.abs(z-s) < .09) m *= .93;                // příčné spáry panelů
+    for (const s of SEAMS) if (Math.abs(z-s) < .09) m *= .89;                // příčné spáry panelů
     if (z > -17 && z < 19) m *= 1 + .05*(hash(Math.floor((z+40)/2.6), Math.floor((a+4)/(Math.PI/5))) - .5);
     // šmouhy na břiše za křídlem (odvzdušnění, olej)
     if (ny < -.2) m *= 1 - .13*sm(-3,3,z)*(1-sm(9,14,z))*Math.pow(.5+.5*Math.sin(a*41),3)*sm(-.2,-.8,ny);
@@ -417,6 +417,9 @@ const opParts = [];
     P(new THREE.BoxGeometry(.2,ch,.62), cm, sx*.38,-.6+ch/2,.72);
     for (let i=0;i<3;i++) P(new THREE.BoxGeometry(.03,.012,.03), lit([0x5dff9a,0xffd23c,0x9fe8ff][i]), sx*.38 + (i-1)*.05,-.595+ch,.5);
   }
+  // štítky a panel jističů na vzdálené stěně
+  { const p = podS(-.6, -2*D); const pb = P(new THREE.BoxGeometry(.03,.26,.5), cm, p.x-.05, p.y+.05, -.6);
+    for (let i=0;i<8;i++) P(new THREE.BoxGeometry(.012,.02,.02), lit(i%3 ? 0xd8dde2 : 0xffb347), p.x-.07, p.y+.1 - Math.floor(i/4)*.09, -.75 + (i%4)*.1); }
   // stropní světlo (teplé)
   P(new THREE.BoxGeometry(.3,.02,.08), lit(0xffe2a8), .25,.45,-.2);
   // potrubí / žebra na vzdálené stěně
@@ -471,7 +474,7 @@ const op = new THREE.Group(); op.position.set(0,-.2,.15); pod.add(op);
   { const pa = M(new THREE.BoxGeometry(.012,.06,.07), patchM, -.255,.0,.17); pa.rotation.z = -.5; }
   // krk + hlava
   limb(V(0,.04,.17), V(0,.075,.33), .055, .05, skin);
-  const head = new THREE.Group(); head.position.set(0,.11,.43); head.rotation.x = .55; op.add(head);
+  const head = new THREE.Group(); head.position.set(0,.11,.43); head.rotation.set(.5, -.38, 0); op.add(head);
   const hs = M(new THREE.SphereGeometry(.1,20,14), skin, 0,0,0, head); hs.scale.set(.86,1.04,1.06);                // lebka/obličej
   const jaw = M(new THREE.SphereGeometry(.065,14,10), skin, 0,-.06,.04, head); jaw.scale.set(1.0,.85,1.05);       // brada/čelist
   const nose = M(new THREE.ConeGeometry(.02,.05,8).rotateX(Math.PI/2), skin, 0,-.015,.112, head); nose.rotation.x = .35;
