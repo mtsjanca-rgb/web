@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; background:#000; }
+  canvas.px { position:absolute; left:0; top:0; width:1080px; height:1920px; image-rendering:pixelated; }
+  #dots { position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.16) 100%) 0 0/4px 4px; }
+  #cap { position:absolute; left:60px; right:60px; top:1330px; text-align:center; font-family:"Inter",sans-serif; font-weight:800;
+         font-size:68px; line-height:1.12; color:#fff; letter-spacing:-.01em;
+         text-shadow:0 3px 0 rgba(0,0,0,.55), 0 0 18px rgba(0,0,0,.45); }
+  #cap span { transition:none; }
+  #cap .hl { color:#f2c14e; }
+  #fade { position:absolute; inset:0; background:#000; opacity:0; pointer-events:none; }
+</style></head><body>
+<canvas id="gl" class="px" width="270" height="480"></canvas>
+<canvas id="ui" class="px" width="216" height="384"></canvas>
+<div id="dots"></div>
+<div id="cap"></div>
+<div id="fade"></div>
+<script type="module">
+import * as THREE from "./lib/three.module.js";
+
+// ================= renderer + dither =================
+const W = 270, H = 480;
+const glc = document.getElementById("gl");
+const renderer = new THREE.WebGLRenderer({ canvas: glc, antialias:false, preserveDrawingBuffer:true });
+renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+const rt = new THREE.WebGLRenderTarget(W, H, { minFilter:THREE.NearestFilter, magFilter:THREE.NearestFilter });
+rt.depthTexture = null;
+const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const postMat = new THREE.ShaderMaterial({
+  uniforms:{ tex:{value:rt.texture}, res:{value:new THREE.Vector2(W,H)} },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  fragmentShader:`
+    uniform sampler2D tex; uniform vec2 res; varying vec2 vUv;
+    float bayer(vec2 p){ int x=int(mod(p.x,4.)), y=int(mod(p.y,4.)); int i=x+y*4;
+      int m[16]; m[0]=0;m[1]=8;m[2]=2;m[3]=10;m[4]=12;m[5]=4;m[6]=14;m[7]=6;m[8]=3;m[9]=11;m[10]=1;m[11]=9;m[12]=15;m[13]=7;m[14]=13;m[15]=5;
+      for(int k=0;k<16;k++){ if(k==i) return float(m[k])/16.; } return 0.; }
+    void main(){
+      vec3 c = texture2D(tex, vUv).rgb;
+      c = pow(c, vec3(1.0/1.0));
+      float l = dot(c, vec3(.299,.587,.114)); c = mix(vec3(l), c, 1.18);   // trochu víc saturace
+      float L = 7.0; float th = bayer(gl_FragCoord.xy) - .5;
+      c = floor(c*L + th + .5)/L;
+      gl_FragColor = vec4(clamp(c,0.,1.),1.);
+    }`
+});
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), postMat));
+
+// ================= scéna =================
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(50, W/H, 0.5, 6000);
+const hemi = new THREE.HemisphereLight(0xdcecff, 0x6a7a8a, 2.6); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff1dd, 3.6); sun.position.set(-120, 220, 80);
+sun.castShadow = true; sun.shadow.mapSize.set(1024,1024);
+Object.assign(sun.shadow.camera, { left:-120, right:120, top:200, bottom:-200, near:10, far:700 });
+scene.add(sun); scene.add(sun.target);
+const LM = (c, o={}) => new THREE.MeshLambertMaterial({ color:c, flatShading:true, ...o });
+
+// obloha
+const sky = new THREE.Mesh(new THREE.SphereGeometry(4000, 24, 16), new THREE.ShaderMaterial({
+  side:THREE.BackSide, depthWrite:false, fog:false,
+  vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+  fragmentShader:`varying vec3 vP; void main(){ float h=normalize(vP).y; vec3 top=vec3(.13,.36,.78), mid=vec3(.42,.66,.93), hor=vec3(.86,.93,1.);
+    vec3 c = h>0.0 ? mix(hor, mix(mid, top, smoothstep(.12,.6,h)), smoothstep(0.,.12,h)) : vec3(.12,.3,.6); gl_FragColor=vec4(c,1.); }`
+}));
+scene.add(sky);
+
+// moře
+const seaMat = new THREE.ShaderMaterial({
+  uniforms:{ t:{value:0}, camPos:{value:new THREE.Vector3()} },
+  vertexShader:`varying vec3 wP; void main(){ vec4 w=modelMatrix*vec4(position,1.); wP=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
+  fragmentShader:`uniform float t; uniform vec3 camPos; varying vec3 wP;
+    float h(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    float n(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+      return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
+    void main(){
+      vec2 p = wP.xz;
+      float w = n(p*vec2(.02,.08)+vec2(t*.05,t*.12))*.6 + n(p*vec2(.05,.2)-vec2(t*.1,t*.05))*.4;
+      vec3 deep=vec3(.08,.25,.55), lite=vec3(.25,.5,.82), foam=vec3(.85,.92,1.);
+      vec3 c = mix(deep, lite, smoothstep(.35,.85,w));
+      c = mix(c, foam, smoothstep(.86,.95,w)*.7);
+      float d = length(wP.xz-camPos.xz);
+      c = mix(c, vec3(.78,.88,.98), smoothstep(400.,2600.,d));
+      gl_FragColor = vec4(c,1.);
+    }`
+});
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(9000,9000), seaMat); sea.rotation.x = -Math.PI/2; scene.add(sea);
+
+// mraky
+const clouds = new THREE.Group(); scene.add(clouds);
+const cMat = LM(0xffffff, { emissive:0x8899aa });
+let seed = 11; const rnd = () => (seed = (seed*16807)%2147483647)/2147483647;
+for (let i=0;i<34;i++){
+  const g = new THREE.Group(); const n = 4+Math.floor(rnd()*4);
+  for (let k=0;k<n;k++){ const s = new THREE.Mesh(new THREE.IcosahedronGeometry(20+rnd()*26,1), cMat); s.position.set(k*28-n*14, rnd()*14, rnd()*24); s.scale.y=.6; g.add(s); }
+  const a = rnd()*Math.PI*2, r = 900+rnd()*1700; g.position.set(Math.cos(a)*r, 200+rnd()*260, Math.sin(a)*r); g.lookAt(0,g.position.y,0);
+  clouds.add(g);
+}
+
+// ---------- letadlová loď ----------
+const carrier = new THREE.Group(); scene.add(carrier);
+const deckY = 20;
+{
+  const s = new THREE.Shape();
+  const pts = [[-26,165],[30,165],[34,40],[34,-110],[22,-160],[4,-178],[-14,-160],[-22,-90],[-40,-30],[-46,40],[-42,110],[-30,165]];
+  s.moveTo(pts[0][0], -pts[0][1]); for (const [x,z] of pts.slice(1)) s.lineTo(x, -z);
+  const g = new THREE.ExtrudeGeometry(s, { depth:26, bevelEnabled:false });
+  g.rotateX(-Math.PI/2); // tvar y -> -z, extruze -> +y
+  const hull = new THREE.Mesh(g, [LM(0x6d737d), LM(0x9aa3ae)]);
+  hull.position.y = deckY-26; hull.castShadow = false; hull.receiveShadow = true; carrier.add(hull);
+  // tmavší pruh u hladiny
+  const band = new THREE.Mesh(g.clone(), LM(0x4c5464)); band.scale.set(1.002,.08,1.002); band.position.y = -2; carrier.add(band);
+  // značení paluby
+  const white = LM(0xf2f2f2), yellow = LM(0xf2c14e);
+  const strip = (x,z,w,l,m,rot=0) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(w,l), m); p.rotation.x=-Math.PI/2; p.rotation.z=rot; p.position.set(x,deckY+.05,z); p.receiveShadow=true; carrier.add(p); };
+  for (let z=150; z>-150; z-=16) strip(-6, z, 1.2, 8, white);         // osa přistávací dráhy
+  strip(-21, 20, .8, 290, yellow); strip(9, 20, .8, 290, yellow);       // okraje dráhy
+  strip(-6, 158, 30, 1.5, white);
+  // ostrov
+  const isl = LM(0x8a939e);
+  const box = (w,h,d,x,y,z,m=isl) => { const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m); b.position.set(x,y,z); b.castShadow=true; b.receiveShadow=true; carrier.add(b); return b; };
+  box(10,16,34, 27,deckY+8,-10); box(8,8,22, 27,deckY+20,-14); box(6,6,10, 27,deckY+27,-16, LM(0x2a2f3a));
+  box(1,22,1, 27,deckY+38,-14); box(6,.8,.8, 27,deckY+44,-14); box(4,4,.6, 27,deckY+32,-6, LM(0x2a2f3a));
+  for (let i=0;i<3;i++) box(.3,.3,30, 31.2,deckY+10+i*3,-10, LM(0x2a2f3a));
+  // zaparkované stroje u přídě (siluety)
+  for (let i=0;i<5;i++){ const j = box(9,1.6,13, 22, deckY+1.2, -60-i*16, LM(0x6b7480)); j.rotation.y = .5; }
+}
+// lana
+const WIRES_Z = [100, 90, 80, 70], WX = 14, WY = deckY + .35;
+const cableMat = LM(0xd9dee6, { emissive:0x404650 });
+const wires = WIRES_Z.map(z => {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,1,5), cableMat); m.castShadow = true; carrier.add(m);
+  for (const sx of [-1,1]){ const b = new THREE.Mesh(new THREE.BoxGeometry(1.2,.8,1.2), LM(0x2b2f37)); b.position.set(-6+sx*WX, deckY+.4, z); carrier.add(b); }
+  return m;
+});
+function beam(m, a, b){ const d = new THREE.Vector3().subVectors(b,a); m.position.copy(a).addScaledVector(d,.5); m.scale.set(1,d.length(),1); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.normalize()); }
+const wireSegB = new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,1,5), cableMat); carrier.add(wireSegB); wireSegB.castShadow = true;
+function setWire(i, hook){ // hook = null => rovné
+  const z = WIRES_Z[i], A = new THREE.Vector3(-6-WX, WY, z), B = new THREE.Vector3(-6+WX, WY, z);
+  if (!hook){ beam(wires[i], A, B); if (i===1) wireSegB.visible=false; return; }
+  beam(wires[i], A, hook); beam(wireSegB, hook, B); wireSegB.visible = true;
+}
+WIRES_Z.forEach((_,i)=>setWire(i,null));
+// brázda
+const wake = new THREE.Mesh(new THREE.PlaneGeometry(40, 700), new THREE.MeshBasicMaterial({ color:0xdde9f7, transparent:true, opacity:.3 }));
+wake.rotation.x = -Math.PI/2; wake.position.set(-6, .2, 520); scene.add(wake);
+
+// ---------- stíhačka ----------
+function makeJet(){
+  const g = new THREE.Group(), body = LM(0x8e98a6), dark = LM(0x2c323d);
+  const fus = new THREE.Mesh(new THREE.CylinderGeometry(.95,1.15,12,8), body); fus.rotation.x = Math.PI/2; g.add(fus);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(.95,4.5,8), body); nose.rotation.x = -Math.PI/2; nose.position.z = -8.2; g.add(nose);
+  const can = new THREE.Mesh(new THREE.SphereGeometry(.8,10,8), LM(0x1d2a44)); can.scale.set(.85,.75,2.4); can.position.set(0,.85,-4.2); g.add(can);
+  for (const sx of [-1,1]){
+    const intake = new THREE.Mesh(new THREE.BoxGeometry(.9,1.2,4), body); intake.position.set(sx*1.3,-.2,-1.5); g.add(intake);
+    const ws = new THREE.Shape(); ws.moveTo(0,-2.5); ws.lineTo(6.6,2.6); ws.lineTo(6.6,3.9); ws.lineTo(0,4.4); ws.closePath();
+    const wg = new THREE.ExtrudeGeometry(ws,{depth:.22,bevelEnabled:false}); wg.rotateX(Math.PI/2);
+    const wing = new THREE.Mesh(wg, body); wing.scale.x = sx; wing.position.set(sx*.8,0,0); wing.castShadow=true; g.add(wing);
+    const ts = new THREE.Shape(); ts.moveTo(0,0); ts.lineTo(3.2,1.6); ts.lineTo(3.2,2.4); ts.lineTo(0,2.6); ts.closePath();
+    const tg = new THREE.ExtrudeGeometry(ts,{depth:.18,bevelEnabled:false}); tg.rotateX(Math.PI/2);
+    const tail = new THREE.Mesh(tg, body); tail.scale.x = sx; tail.position.set(sx*.8,0,4.4); g.add(tail);
+    const fs = new THREE.Shape(); fs.moveTo(0,0); fs.lineTo(2.6,0); fs.lineTo(3.4,3.2); fs.lineTo(2.2,3.2); fs.closePath();
+    const fg = new THREE.ExtrudeGeometry(fs,{depth:.18,bevelEnabled:false}); fg.rotateY(-Math.PI/2);
+    const fin = new THREE.Mesh(fg, body); fin.position.set(sx*1.0,.6,3.2); fin.rotation.z = -sx*.35; g.add(fin);
+    const noz = new THREE.Mesh(new THREE.CylinderGeometry(.55,.6,1.4,8), dark); noz.rotation.x = Math.PI/2; noz.position.set(sx*.55,0,6.4); g.add(noz);
+    // podvozek
+    const strut = new THREE.Mesh(new THREE.BoxGeometry(.25,1.6,.25), dark); strut.position.set(sx*1.8,-1.4,1.2); g.add(strut);
+    const wh = new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.4,8), LM(0x15181e)); wh.rotation.z = Math.PI/2; wh.position.set(sx*1.8,-2.2,1.2); g.add(wh);
+  }
+  const ns = new THREE.Mesh(new THREE.BoxGeometry(.25,1.6,.25), dark); ns.position.set(0,-1.4,-6); g.add(ns);
+  const nw = new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.35,8), LM(0x15181e)); nw.rotation.z = Math.PI/2; nw.position.set(0,-2.2,-6); g.add(nw);
+  // hák
+  const hook = new THREE.Group(); hook.position.set(0,-.7,4.6); g.add(hook);
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(.22,.22,3.4), LM(0x23262d)); bar.position.z = 1.7; hook.add(bar);
+  const tipM = new THREE.Mesh(new THREE.BoxGeometry(.5,.35,.5), LM(0xf2c14e)); tipM.position.z = 3.4; hook.add(tipM);
+  const tip = new THREE.Object3D(); tip.position.z = 3.5; hook.add(tip);
+  // plameny
+  const flames = [];
+  for (const sx of [-1,1]){
+    const f = new THREE.Mesh(new THREE.ConeGeometry(.5,4,8,1,true), new THREE.MeshBasicMaterial({ color:0xffa040, transparent:true, opacity:.9, blending:THREE.AdditiveBlending, depthWrite:false }));
+    f.rotation.x = Math.PI/2; f.position.set(sx*.55,0,9.0); f.visible=false; g.add(f); flames.push(f);
+    const core = new THREE.Mesh(new THREE.ConeGeometry(.32,2.4,8,1,true), new THREE.MeshBasicMaterial({ color:0xfff2c0, transparent:true, opacity:.95, blending:THREE.AdditiveBlending, depthWrite:false }));
+    core.rotation.x = Math.PI/2; core.position.set(sx*.55,0,7.9); core.visible=false; g.add(core); flames.push(core);
+  }
+  g.traverse(o => { if (o.isMesh && !o.material.blending) { o.castShadow = true; } });
+  g.userData = { hook, tip, flames };
+  return g;
+}
+const jet = makeJet(); scene.add(jet);
+function setHook(a){ jet.userData.hook.rotation.x = -a; }  // 0 = složený, ~0.7 = spuštěný
+function setFlames(on, t){ jet.userData.flames.forEach((f,i)=>{ f.visible = on; const k = 1 + Math.sin(t*60+i)*.12 + Math.sin(t*23+i*2)*.08; f.scale.set(1,k,1); }); }
+
+// ---------- hydraulika (podpalubí) ----------
+const hyd = new THREE.Group(); hyd.position.set(0,-600,0); scene.add(hyd);
+const hydLights = [];
+{
+  const steel = LM(0x6c7584), dark = LM(0x1c212b), wall = LM(0x2a3242), yel = LM(0xf2c14e), red = LM(0xb8322e);
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(80,1,60), LM(0x343b48)); floor.position.y=-1; floor.receiveShadow=true; hyd.add(floor);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(80,40,1), wall); back.position.set(0,19,-20); hyd.add(back);
+  const ceil = new THREE.Mesh(new THREE.BoxGeometry(80,1,60), wall); ceil.position.set(0,30,0); hyd.add(ceil);
+  for (let x=-36;x<=36;x+=12){ const r = new THREE.Mesh(new THREE.BoxGeometry(1.4,30,1.4), dark); r.position.set(x,15,-19); hyd.add(r); }
+  const cyl = new THREE.Mesh(new THREE.CylinderGeometry(3.2,3.2,30,14), steel); cyl.rotation.z = Math.PI/2; cyl.position.set(-6,5,0); cyl.castShadow=true; hyd.add(cyl);
+  for (const x of [-20,-12,-4,4]){ const ring = new THREE.Mesh(new THREE.CylinderGeometry(3.5,3.5,1,14), dark); ring.rotation.z=Math.PI/2; ring.position.set(x,5,0); hyd.add(ring); }
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(3.6,3.6,1.6,14), red); cap.rotation.z=Math.PI/2; cap.position.set(-21.5,5,0); hyd.add(cap);
+  for (const z of [-2.6, 2.6]){ const leg = new THREE.Mesh(new THREE.BoxGeometry(24,2.6,1), dark); leg.position.set(-6,1.2,z); hyd.add(leg); }
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,22,10), LM(0xcfd6e0)); rod.rotation.z = Math.PI/2; hyd.add(rod);
+  const cross = new THREE.Group(); hyd.add(cross);
+  const cb = new THREE.Mesh(new THREE.BoxGeometry(2,8,6), yel); cross.add(cb);
+  const sheaves = [];
+  for (const z of [-1.8, 1.8]){ const sh = new THREE.Mesh(new THREE.TorusGeometry(2.2,.5,6,14), dark); sh.position.set(1.4,0,z); cross.add(sh); sheaves.push(sh); }
+  const fixed = new THREE.Mesh(new THREE.TorusGeometry(2.2,.5,6,14), dark); fixed.position.set(30,5,0); hyd.add(fixed);
+  const cab1 = new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,1,5), cableMat), cab2 = cab1.clone(), cab3 = cab1.clone();
+  hyd.add(cab1, cab2, cab3);
+  // tlakoměr
+  const gauge = new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,.6,16), LM(0xe8e8e8)); gauge.rotation.x = Math.PI/2; gauge.position.set(-16,14,-19); hyd.add(gauge);
+  const needle = new THREE.Mesh(new THREE.BoxGeometry(.2,1.8,.2), red); needle.position.set(-16,14,-18.5); hyd.add(needle);
+  const pipe = new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,9,8), steel); pipe.position.set(-16,8.4,-17); hyd.add(pipe);
+  for (const [x,c] of [[-25,0xffd68a],[10,0xffd68a]]){ const pl = new THREE.PointLight(c, 0, 90, 1.4); pl.position.set(x,24,10); hyd.add(pl); hydLights.push(pl); }
+  hyd.userData = { rod, cross, sheaves, fixed, cab1, cab2, cab3, needle };
+}
+function setHyd(p, t){ // p 0..1 = zdvih pístu
+  const u = hyd.userData, x = 9 + p*16;           // pozice křížové hlavy
+  const r0 = 6; u.rod.position.set((r0 + x)/2, 5, 0); u.rod.scale.y = (x - r0)/22;
+  u.cross.position.set(x, 5, 0);
+  u.sheaves.forEach(s => s.rotation.z = -p*14);
+  u.fixed.rotation.z = p*14;
+  const H = hyd.position.y;
+  const a = new THREE.Vector3(x+1.4, 5+2.2, 0).add(hyd.position), b = new THREE.Vector3(30, 5+2.2, 0).add(hyd.position);
+  beam(u.cab1, a, b);
+  const c = new THREE.Vector3(30+2.2, 5, 0).add(hyd.position), d = new THREE.Vector3(32.2, 30, 0).add(hyd.position);
+  beam(u.cab2, c, d);
+  const e = new THREE.Vector3(x+1.4, 5-2.2, 0).add(hyd.position), f = new THREE.Vector3(30, 5-2.2, 0).add(hyd.position);
+  beam(u.cab3, e, f);
+  u.needle.rotation.z = 1.2 - p*2.4 + Math.sin(t*40)*.03*p;
+}
+
+// ================= UI: LCD štítky (bitmapový font 5×7) =================
+const F = {
+A:["01110","10001","10001","11111","10001","10001","10001"],B:["11110","10001","10001","11110","10001","10001","11110"],
+C:["01111","10000","10000","10000","10000","10000","01111"],D:["11110","10001","10001","10001","10001","10001","11110"],
+E:["11111","10000","10000","11110","10000","10000","11111"],F:["11111","10000","10000","11110","10000","10000","10000"],
+G:["01111","10000","10000","10011","10001","10001","01111"],H:["10001","10001","10001","11111","10001","10001","10001"],
+I:["11111","00100","00100","00100","00100","00100","11111"],J:["00111","00010","00010","00010","00010","10010","01100"],
+K:["10001","10010","10100","11000","10100","10010","10001"],L:["10000","10000","10000","10000","10000","10000","11111"],
+M:["10001","11011","10101","10101","10001","10001","10001"],N:["10001","11001","10101","10011","10001","10001","10001"],
+O:["01110","10001","10001","10001","10001","10001","01110"],P:["11110","10001","10001","11110","10000","10000","10000"],
+Q:["01110","10001","10001","10001","10101","10010","01101"],R:["11110","10001","10001","11110","10100","10010","10001"],
+S:["01111","10000","10000","01110","00001","00001","11110"],T:["11111","00100","00100","00100","00100","00100","00100"],
+U:["10001","10001","10001","10001","10001","10001","01110"],V:["10001","10001","10001","10001","10001","01010","00100"],
+W:["10001","10001","10001","10101","10101","11011","10001"],X:["10001","10001","01010","00100","01010","10001","10001"],
+Y:["10001","10001","01010","00100","00100","00100","00100"],Z:["11111","00001","00010","00100","01000","10000","11111"],
+"0":["01110","10011","10101","10101","11001","10001","01110"],"1":["00100","01100","00100","00100","00100","00100","01110"],
+"2":["01110","10001","00001","00110","01000","10000","11111"],"3":["11110","00001","00001","01110","00001","00001","11110"],
+"4":["00010","00110","01010","10010","11111","00010","00010"],"5":["11111","10000","11110","00001","00001","10001","01110"],
+"6":["00110","01000","10000","11110","10001","10001","01110"],"7":["11111","00001","00010","00100","01000","01000","01000"],
+"8":["01110","10001","10001","01110","10001","10001","01110"],"9":["01110","10001","10001","01111","00001","00010","01100"],
+"/":["00001","00010","00010","00100","01000","01000","10000"],".":["00000","00000","00000","00000","00000","01100","01100"],
+" ":["00000","00000","00000","00000","00000","00000","00000"],"-":["00000","00000","00000","11111","00000","00000","00000"],
+"?":["01110","10001","00001","00110","00100","00000","00100"]};
+const ui = document.getElementById("ui"), cx = ui.getContext("2d");
+function txt(s, x, y, col){ cx.fillStyle = col; let px = x; for (const ch of s){ const g = F[ch] || F[" "]; for (let r=0;r<7;r++) for (let c=0;c<5;c++) if (g[r][c]==="1") cx.fillRect(px+c, y+r, 1, 1); px += 6; } }
+function label(lines, cxp, top, a=1, anchor=null){
+  if (a <= 0) return;
+  cx.globalAlpha = a;
+  const w = Math.max(...lines.map(l=>l.length))*6 + 9, h = lines.length*10 + 7;
+  const x = Math.round(cxp - w/2), y = Math.round(top);
+  if (anchor){ // tečkovaná čára k objektu
+    cx.fillStyle = "#f2c14e"; const x0 = x + w/2, y0 = y + h, [x1,y1] = anchor;
+    const n = Math.max(Math.abs(x1-x0), Math.abs(y1-y0)); for (let i=0;i<n;i+=2){ const k=i/n; cx.fillRect(Math.round(x0+(x1-x0)*k), Math.round(y0+(y1-y0)*k), 1, 1); }
+    cx.fillRect(Math.round(x1)-1, Math.round(y1)-1, 3, 3);
+  }
+  cx.fillStyle = "#0b1020"; cx.fillRect(x-1, y-1, w+2, h+2);
+  cx.fillStyle = "#3b4660"; cx.fillRect(x, y, w, h); cx.fillStyle = "#121a2c"; cx.fillRect(x+1, y+1, w-2, h-2);
+  lines.forEach((l,i) => { const lw = l.length*6-1; txt(l, Math.round(x + (w-lw)/2), y+4+i*10, i===0 && lines.length>1 ? "#f2c14e" : "#e9eef7"); });
+  cx.globalAlpha = 1;
+}
+function proj(v){ const p = v.clone().project(cam); return [ (p.x*.5+.5)*216, (-p.y*.5+.5)*384, p.z ]; }
+
+// ================= titulky =================
+const CAPS = [
+  [0.3, 2.4, "How does a *carrier*"], [2.4, 4.5, "stop a jet in *two seconds?*"],
+  [4.8, 6.8, "Under its *tail,*"], [6.8, 8.9, "the jet lowers a *hook.*"],
+  [9.2, 11.3, "Across the deck"], [11.3, 13.5, "lie *steel cables.*"],
+  [13.7, 16.15, "Watch the *hook…*"], [16.15, 17.25, "*240 km/h*…"], [17.25, 20.1, "…to *zero.*"],
+  [20.3, 22.6, "Below deck, *hydraulic engines*"], [22.6, 25.0, "soak up the *energy.*"],
+  [25.3, 27.4, "And the pilot? *Full throttle.*"], [27.4, 30.6, "In case the hook *misses.*"],
+];
+const capEl = document.getElementById("cap");
+function setCaption(t){
+  const c = CAPS.find(([a,b]) => t>=a && t<b);
+  if (!c){ capEl.innerHTML = ""; return; }
+  const words = c[2].split(" "), dur = (c[1]-c[0]) * .8, per = dur/words.length;
+  const k = Math.floor((t - c[0]) / per);
+  let hlOn = false;
+  capEl.innerHTML = words.map((w,i) => {
+    const starts = w.startsWith("*"); if (starts) hlOn = true;
+    const clean = w.replace(/\*/g,""); const isHl = hlOn; if (w.endsWith("*")) hlOn = false;
+    const active = i === Math.min(k, words.length-1);
+    return `<span class="${active ? "hl" : ""}">${clean}</span>`;
+  }).join(" ");
+}
+
+// ================= časová osa =================
+const cl = (x,a=0,b=1)=>Math.min(b,Math.max(a,x)), P=(t,s,d)=>cl((t-s)/d), io=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2, oc=p=>1-Math.pow(1-p,3);
+const V = 66.7, TD = 16.0;                 // 240 km/h, čas dosednutí
+const ZTD = 110, HOOKBACK = 4.6 + 3.5*Math.cos(.7) + .3;
+const ZCATCH_HOOK = WIRES_Z[1], ZC = ZCATCH_HOOK + HOOKBACK, TC = TD + (ZTD - ZC)/V, STOP = 2.0, A = V/STOP;
+function jetState(t){ // S4: pozice a rychlost
+  if (t < TD){ const back = (TD - t)*V; return { z: ZTD + back, y: deckY + 2.6 + back*Math.tan(3.5*Math.PI/180), v: V, pitch: .06 }; }
+  if (t < TC){ return { z: ZTD - (t-TD)*V, y: deckY + 2.6, v: V, pitch: .05 }; }
+  const u = Math.min(t - TC, STOP); const s = V*u - .5*A*u*u;
+  return { z: ZC - s, y: deckY + 2.6 - Math.sin(Math.min(1,u/.5)*Math.PI)*.35, v: Math.max(0, V - A*u), pitch: -.05*Math.sin(Math.min(1,u/.6)*Math.PI) };
+}
+
+window.render = function(t){
+  seaMat.uniforms.t.value = t;
+  cx.clearRect(0,0,216,384);
+  sky.visible = sea.visible = clouds.visible = carrier.visible = wake.visible = true; hyd.visible = false;
+  scene.background = null; hemi.intensity = 2.6; sun.intensity = 3.6; hydLights.forEach(l=>l.intensity=0);
+  WIRES_Z.forEach((_,i)=>setWire(i,null));
+  setFlames(false, t); jet.visible = true; jet.rotation.set(0,0,0);
+  let shake = 0;
+
+  if (t < 4.6){
+    // S1: široký záběr, stíhačka se blíží zezadu
+    const k = t/4.6;
+    jet.position.set(-6, 62 - k*16, 500 - k*190); setHook(0); jet.rotation.x = .04; jet.rotation.z = Math.sin(t*1.1)*.04;
+    cam.position.set(-34 + k*6, 74 - k*6, 600 - k*60); cam.lookAt(-6, 34, 200 - k*40);
+    cam.fov = 42; cam.updateProjectionMatrix();
+    const a = cl((t-.4)/.3), p = proj(new THREE.Vector3(-6, deckY, 60));
+    label(["AIRCRAFT CARRIER","ARRESTED LANDING"], 108, 92, a, [p[0], p[1]]);
+  } else if (t < 9.0){
+    // S2: detail stíhačky ve vzduchu, spouští hák
+    const k = (t-4.6)/4.4;
+    jet.position.set(0, 120, 300 - k*V*4.4*.25); jet.rotation.x = .05; jet.rotation.z = Math.sin(t*.9)*.03;
+    setHook(.7 * oc(P(t, 5.6, 1.4)));
+    const jp = jet.position;
+    cam.position.set(jp.x - 25 + k*4, jp.y - 5 + k*1.5, jp.z + 17 - k*4); cam.lookAt(jp.x, jp.y - 1.2, jp.z + 3.5);
+    cam.fov = 48; cam.updateProjectionMatrix();
+    jet.updateMatrixWorld(true);
+    const tipW = jet.userData.tip.getWorldPosition(new THREE.Vector3()), p = proj(tipW);
+    label(["TAILHOOK"], 108, 80, cl((t-6.2)/.3), [p[0], p[1]]);
+  } else if (t < 13.6){
+    // S3: nízký záběr přes palubu na lana
+    const k = (t-9)/4.6;
+    jet.visible = false;
+    cam.position.set(-22 + k*5, deckY + 2.6 - k*.5, 110 - k*8); cam.lookAt(-4, deckY + .3, 82);
+    cam.fov = 50; cam.updateProjectionMatrix();
+    const p = proj(new THREE.Vector3(-6, WY, 90));
+    label(["ARRESTING","WIRES"], 108, 70, cl((t-9.7)/.3), [p[0], p[1]]);
+  } else if (t < 20.2){
+    // S4: přistání, hák chytí 2. lano
+    const s = jetState(t);
+    jet.position.set(-6, s.y, s.z); jet.rotation.x = s.pitch; setHook(.7);
+    if (t >= TC){
+      jet.updateMatrixWorld(true);
+      const hp = jet.userData.tip.getWorldPosition(new THREE.Vector3()); hp.y = WY;
+      setWire(1, hp);
+      shake = Math.max(0, 1 - (t-TC)/.5);
+    }
+    cam.position.set(-28 + Math.sin(t*37)*shake*.6, deckY + 13 + Math.sin(t*41)*shake*.5, 126); cam.lookAt(-6, deckY + 1, 70 - P(t,TC,2)*14);
+    cam.fov = 52; cam.updateProjectionMatrix();
+    const kmh = Math.round(s.v * 3.6);
+    label(["SPEED", `${kmh} KM/H`], 108, 62, cl((t-14.0)/.3));
+  } else if (t < 25.1){
+    // S5: podpalubí – hydraulika
+    sky.visible = sea.visible = clouds.visible = carrier.visible = wake.visible = false; jet.visible = false; hyd.visible = true;
+    scene.background = new THREE.Color(0x0b0e14); hemi.intensity = .9; sun.intensity = 0; hydLights.forEach(l=>l.intensity=900);
+    const p = io(P(t, 20.7, 2.0));
+    setHyd(p, t);
+    const k = (t-20.2)/4.9;
+    cam.position.set(-34 + k*10, -600 + 16 - k*3, 44 - k*8); cam.lookAt(6, -600 + 5, 0);
+    cam.fov = 50; cam.updateProjectionMatrix();
+    const pp = proj(new THREE.Vector3(-6, -600 + 8.2, 0));
+    label(["HYDRAULIC","ENGINE"], 108, 66, cl((t-20.8)/.3), [pp[0], pp[1]]);
+  } else {
+    // S6: zadní pohled na trysky, plný plyn
+    const s = jetState(40); jet.position.set(-6, s.y, s.z); setHook(.7);
+    jet.updateMatrixWorld(true);
+    const hp = jet.userData.tip.getWorldPosition(new THREE.Vector3()); hp.y = WY; setWire(1, hp);
+    setFlames(true, t);
+    const k = (t-25.1)/6;
+    cam.position.set(-6 + 7 - k*3, deckY + 3.2 + k*1.2, s.z + 24 - k*5); cam.lookAt(-6, deckY + 2.4, s.z + 2);
+    cam.fov = 50; cam.updateProjectionMatrix();
+    shake = .25;
+    cam.position.x += Math.sin(t*53)*shake*.15; cam.position.y += Math.sin(t*47)*shake*.12;
+    const p = proj(new THREE.Vector3(-6, s.y, s.z + 7.4));
+    label(["FULL","THROTTLE"], 108, 70, cl((t-25.6)/.3), [p[0], p[1]]);
+  }
+  seaMat.uniforms.camPos.value.copy(cam.position);
+  sun.target.position.set(cam.position.x, 0, cam.position.z - 60); sun.position.set(cam.position.x - 120, 220, cam.position.z + 20);
+
+  renderer.setRenderTarget(rt); renderer.render(scene, cam);
+  renderer.setRenderTarget(null); renderer.render(postScene, postCam);
+  setCaption(t);
+  // krátké střihy: záblesk černé jen na úplném konci
+  document.getElementById("fade").style.opacity = cl((t-30.6)/.4);
+};
+window.ready = true;
+window.render(0);
+</script>
+</body></html>
