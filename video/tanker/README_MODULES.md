@@ -34,6 +34,9 @@ Render: `node render.js <outdir> [t1,t2,…]` → `window.render(t)` per frame, 
 `fighter` group · `recDoor` (hinge at (0,1.02,−.91), rotation.x 0→1.9 open) · `RECEPT` · `fTanks[{sh,fl,z0,l}]` x-ray tanks
 · `fDots[28]` + `FPATHS[4]` (fighter-local paths RECEPT → tanks) + `pathPt(path,u)` · `fSkin`, `fXray`, `fighterXray(on)`.
 `fSkin` is collected at build time (all meshes except tanks/dots) – add new skin meshes before that traverse.
+New (v3 model): `canopy` (gold glass mesh) · `pilot` group (child of the ejection-seat group, reclined) · `NOZZLE` = fighter-local nozzle exit
+`(0, 0, 7.55)` (use for heat haze / exhaust VFX) · `fLights[]` formation strips + nav lights (MeshBasic) · `fDecals[]` insignia / tail band
+(hidden by `fighterXray(true)`). Geometry: nose tip z −7.62 (pitot to −8.1), wingtip AIM-9 at x ±4.7, 370-gal tanks at x ±2.15, AIM-120 at x ±3.65.
 
 ## js/vfx.js
 UI: `contactBurst(cx, t, R)` small pixel flare + thin ring at R (20.62–21.1) · `flash(t)` subtle #flash · `fuelOff(T,F)` / `fuelFlow(t,T,F)` S8.
