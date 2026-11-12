@@ -7,7 +7,9 @@ import { cl, P, io, oc, W } from "./helpers.js";
 import { contactBurst, fuelOff, fuelFlow } from "./vfx.js";
 
 export const SPEED = 150;
-let S3=[18,28,92,88,-42,-36,445,860];
+let S8=[-6.5,25,23.5,-3,23,21,540,815,.4,22,13];
+let S10=[-14,7,88,-8,13,140,860,900];
+let S3=[18,26,95,91,-27,-23,468,760];
 let FX=0, FY=-3, FZ=5;
 let AZ0=-62, AZ1=-38, R0=15, R1=7.5, Y0=-3, Y1=-.5, PX1=540, PY1=820, RL0=28, RL1=16;
 export function _tune(o){ AZ0=o.AZ0??AZ0; AZ1=o.AZ1??AZ1; R0=o.R0??R0; R1=o.R1??R1; Y0=o.Y0??Y0; Y1=o.Y1??Y1; PX1=o.PX1??PX1; PY1=o.PY1??PY1; } // m/s ≈ 540 km/h
@@ -52,15 +54,15 @@ function scenePose(t){
     fighter.position.set(-6, -16, 70).add(bob);
     const F = fighter.position;
     cam.fov = 44;
-    cam.position.set(F.x - 2 - ks*1.5, F.y + .4 + ks*2.2, F.z + 20 + ks*9);
-    aim(F.clone().lerp(V3(-1, -2, 4), .25 + .3*ks), 540, 960 - 30*ks);
+    cam.position.set(F.x + 2.5 - ks*1.5, F.y + .4 + ks*2.2, F.z + 23 + ks*6);
+    aim(F.clone().lerp(V3(-1, -2, 4), .25 + .3*ks), 660 - 110*ks, 960 - 30*ks);
   } else if (t < 9.3){                        // S3 tanker zepředu-zdola, pomalý oblet
     shot = 3; const k = (t-5.45)/3.85, ks = io(k);
-    fighter.position.set(30, -20, 95).add(bob);
+    fighter.position.set(30, -20, 95).add(bob); fighter.visible = false;
     cam.fov = 40;
     const az = (S3[0] + (S3[1]-S3[0])*ks)*Math.PI/180, r = S3[2] - (S3[2]-S3[3])*ks;
     cam.position.set(-Math.sin(az)*r, S3[4] + (S3[5]-S3[4])*ks, -Math.cos(az)*r);
-    aim(V3(0, -1, 1), S3[6], S3[7]);
+    aim(V3(0, -1, 1), S3[6] - 50*ks, S3[7]);
   } else if (t < 12.45){                      // S4 stíhačka se přisune zboku pod ocas
     shot = 4; const k = io(P(t, 9.3, 2.9)), kc = (t-9.3)/3.15;
     const from = V3(-1.5, -14.5, 49), to = CONTACT_POS.clone().add(V3(0,-.9,3.0));
@@ -116,8 +118,8 @@ function scenePose(t){
     fighter.updateMatrixWorld(true);
     const R = W(fighter, RECEPT);
     cam.fov = 44;
-    cam.position.set(R.x - 9.5 + ks*1.4, R.y + 20 - ks*1.4, R.z + 11 - ks*1.0);
-    aim(W(fighter, V3(0,0,.4)), 540, 800);
+    cam.position.set(R.x + S8[0] + (S8[3]-S8[0])*ks, R.y + S8[1] + (S8[4]-S8[1])*ks, R.z + S8[2] + (S8[5]-S8[2])*ks);
+    aim(W(fighter, V3(0,0,S8[8])), S8[6], S8[7]); cam.rotateZ((S8[9] + (S8[10]-S8[9])*ks)*Math.PI/180);
   } else if (t < 28.0){                       // S9 odpojení a odpad
     shot = 9; const k = (t-24.95)/3.05;
     const drop = io(P(t, 25.5, 2.3));
@@ -134,9 +136,9 @@ function scenePose(t){
     fighter.position.set(-60, -40, 60);
     bAng = .22;
     cam.fov = 50;
-    const kz = k*k*(1.4 - .4*k);
-    cam.position.set(-7 - k*2, -13 + k*5, 20 + kz*120);
-    aim(V3(0, -1 + k*1, 4 - k*6), 540, 760 - 120*k);
+    const kz = io(k)*.75 + k*.25;
+    cam.position.set(S10[0] + (S10[3]-S10[0])*k, S10[1] + (S10[4]-S10[1])*k, S10[2] + (S10[5]-S10[2])*kz);
+    aim(V3(0, -1, 4), 540, S10[6] + (S10[7]-S10[6])*k);
   }
   setBoom(bAng, bExt, bYaw);
   cam.updateProjectionMatrix();
