@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="cs"><head><meta charset="utf-8">
+<style>
+  :root { --bg:#080b11; --surface:#111825; --line:#223049; --text:#e6ecf5; --muted:#93a1b8; --accent:#4da6ff; --bad:#ff5d6c; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:1080px; height:1920px; overflow:hidden; background:var(--bg); font-family:"Inter",sans-serif; color:var(--text); }
+  .scene { position:absolute; inset:0; overflow:hidden; display:none; }
+  .bg-grid { position:absolute; inset:-200px; background:
+      radial-gradient(900px 700px at 50% 35%, rgba(77,166,255,.18), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 2px, transparent 2px 120px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 2px, transparent 2px 120px); }
+  .big { position:absolute; left:80px; right:80px; font-weight:900; letter-spacing:-.04em; line-height:.95; }
+  .w { display:block; font-size:170px; transform-origin:left center; }
+  .accent { color:var(--accent); }
+  .under { position:absolute; height:22px; background:var(--accent); border-radius:11px; transform-origin:left; }
+  .h2 { position:absolute; left:80px; right:80px; font-weight:900; font-size:118px; letter-spacing:-.035em; line-height:1; }
+  .item { position:absolute; left:80px; right:80px; height:150px; border-radius:28px; background:var(--surface); border:3px solid var(--line);
+          display:flex; align-items:center; gap:34px; padding:0 40px; font-size:56px; font-weight:700; }
+  .x { width:82px; height:82px; border-radius:50%; background:rgba(255,93,108,.15); color:var(--bad); display:grid; place-items:center; font-size:56px; font-weight:900; flex:none; }
+  .photo { position:absolute; inset:0; background:url(jan-kodad.jpg) no-repeat; background-size:auto 100%; background-position:-1000px 0; transform-origin:50% 35%; }
+  .shade { position:absolute; inset:0; background:linear-gradient(180deg, rgba(8,11,17,.75) 0%, rgba(8,11,17,0) 32%, rgba(8,11,17,0) 48%, rgba(8,11,17,.92) 78%, #080b11 100%); }
+  .counter { position:absolute; left:80px; top:260px; }
+  .counter b { display:block; font-size:210px; font-weight:900; letter-spacing:-.05em; line-height:1; color:#fff; }
+  .counter span { font-size:52px; font-weight:800; color:#fff; text-shadow:0 3px 18px rgba(0,0,0,.7); }
+  .counter b { text-shadow:0 6px 30px rgba(0,0,0,.45); }
+  .pill { display:inline-block; background:var(--accent); color:#06121f; padding:10px 26px; border-radius:999px; font-weight:900; }
+  .flash { position:absolute; inset:0; background:#fff; pointer-events:none; }
+  .wipe { position:absolute; left:-10%; width:120%; height:140%; background:var(--accent); top:0; }
+  .logo { position:absolute; left:50%; top:560px; width:360px; height:360px; margin-left:-180px; }
+  .brand { position:absolute; left:0; right:0; top:960px; text-align:center; font-size:150px; font-weight:900; letter-spacing:.02em; }
+  .brand i { display:inline-block; font-style:normal; }
+  .tag { position:absolute; left:0; right:0; top:1150px; text-align:center; font-size:50px; font-weight:600; color:var(--muted); }
+  .cta { position:absolute; left:110px; right:110px; top:1290px; height:150px; border-radius:999px; background:var(--accent); color:#06121f;
+         display:flex; align-items:center; justify-content:center; font-size:56px; font-weight:900; box-shadow:0 20px 70px rgba(77,166,255,.45); }
+  .handle { position:absolute; left:0; right:0; top:1475px; text-align:center; font-size:40px; color:var(--muted); font-weight:600; }
+  .prog { position:absolute; left:0; top:0; height:10px; background:var(--accent); }
+</style></head><body>
+
+<!-- S1: hook -->
+<div class="scene" id="s1">
+  <div class="bg-grid" id="g1"></div>
+  <div class="big" style="top:560px">
+    <span class="w" id="w1">Přestaň</span>
+    <span class="w" id="w2">trénovat</span>
+    <span class="w accent" id="w3">naslepo.</span>
+  </div>
+  <div class="under" id="u1" style="left:84px; top:1070px; width:760px"></div>
+</div>
+
+<!-- S2: problém -->
+<div class="scene" id="s2">
+  <div class="bg-grid"></div>
+  <div class="h2" id="p1" style="top:330px">Dřeš, ale<br><span class="accent">výsledky nikde?</span></div>
+  <div class="item" id="i1" style="top:700px"><div class="x">✕</div>Plán z internetu</div>
+  <div class="item" id="i2" style="top:880px"><div class="x">✕</div>Každé 3 týdny jiný</div>
+  <div class="item" id="i3" style="top:1060px"><div class="x">✕</div>Dva týdny a konec</div>
+</div>
+
+<!-- S3: řešení -->
+<div class="scene" id="s3">
+  <div class="photo" id="ph"></div>
+  <div class="shade"></div>
+  <div class="counter" id="ct"><b id="num">0</b><span>vedených klientů</span></div>
+  <div class="h2" id="r1" style="top:1110px; font-size:104px">Plán <span class="accent">na míru.</span></div>
+  <div class="h2" id="r2" style="top:1240px; font-size:60px; font-weight:700; letter-spacing:-.01em"><span class="pill">každé 4 týdny</span> ho ladíme</div>
+</div>
+
+<!-- S4: brand + CTA -->
+<div class="scene" id="s4">
+  <div class="bg-grid"></div>
+  <svg class="logo" viewBox="0 0 40 40"><path id="chk" d="M9 20 L17 29 L32 9" fill="none" stroke="#4da6ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="brand" id="brand"></div>
+  <div class="tag" id="tag">Online coaching s Janem Kodadem</div>
+  <div class="cta" id="cta">Napiš mi → ozvu se do 24 h</div>
+  <div class="handle" id="hd">odkaz v profilu</div>
+</div>
+
+<div class="wipe" id="wipe" style="display:none"></div>
+<div class="flash" id="flash" style="opacity:0"></div>
+<div class="prog" id="prog"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const cl = (x,a=0,b=1) => Math.min(b, Math.max(a, x));
+const prog = (t, s, d) => cl((t - s) / d);
+const outCubic = p => 1 - Math.pow(1 - p, 3);
+const outBack = p => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+const inOut = p => p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2;
+
+const BRAND = "VYTRVEJ";
+$("brand").innerHTML = [...BRAND].map((c,i) => `<i id="b${i}">${c}</i>`).join("");
+const chk = $("chk"); const LEN = chk.getTotalLength();
+chk.style.strokeDasharray = LEN;
+
+function show(id, on){ $(id).style.display = on ? "block" : "none"; }
+
+// slam: velký -> 1, rozmazaný -> ostrý
+function slam(el, t, s){
+  const p = prog(t, s, .28);
+  if (t < s) { el.style.opacity = 0; return; }
+  const e = outCubic(p);
+  el.style.opacity = cl(p * 3);
+  el.style.transform = `scale(${1.7 - .7*e})`;
+  el.style.filter = `blur(${(1-e)*14}px)`;
+}
+function rise(el, t, s, d=.35, dist=80){
+  const p = prog(t, s, d), e = outBack(p);
+  el.style.opacity = cl(p * 2.5);
+  el.style.transform = `translateY(${(1-e)*dist}px)`;
+}
+
+window.render = function(t){
+  // ----- S1 0–2.5
+  show("s1", t < 2.5);
+  if (t < 2.5){
+    slam($("w1"), t, 0.0); slam($("w2"), t, 0.4); slam($("w3"), t, 0.8);
+    const u = outCubic(prog(t, 1.45, .35));
+    $("u1").style.transform = `scaleX(${u})`;
+    // shake po dopadech
+    let sh = 0; for (const s of [0.28, 0.68, 1.08]) { const k = t - s; if (k > 0 && k < .25) sh += Math.sin(k*90) * (1 - k/.25) * 14; }
+    document.querySelector("#s1 .big").style.transform = `translate(${sh}px, ${-sh*.5}px)`;
+    $("g1").style.transform = `scale(${1 + t*.04})`;
+  }
+  // ----- S2 2.5–5
+  show("s2", t >= 2.5 && t < 5);
+  if (t >= 2.5 && t < 5){
+    rise($("p1"), t, 2.65, .4, 120);
+    rise($("i1"), t, 3.25); rise($("i2"), t, 3.65); rise($("i3"), t, 4.05);
+    const z = 1 + (t-2.5) * .02; document.querySelector("#s2").style.transform = `scale(${z})`;
+  }
+  // ----- S3 5–7.5
+  show("s3", t >= 5 && t < 7.5);
+  if (t >= 5 && t < 7.5){
+    const k = (t - 5) / 2.5;
+    $("ph").style.transform = `scale(${1.22 - .14*inOut(k)})`;
+    const n = Math.round(99 * outCubic(prog(t, 5.15, 1.2)));
+    $("num").textContent = n + (n >= 99 ? "+" : "");
+    rise($("ct"), t, 5.1, .35, 60);
+    rise($("r1"), t, 5.7, .35, 100); rise($("r2"), t, 6.1, .35, 80);
+  }
+  // ----- S4 7.5–10
+  show("s4", t >= 7.5);
+  if (t >= 7.5){
+    const d = outCubic(prog(t, 7.6, .55));
+    chk.style.strokeDashoffset = LEN * (1 - d);
+    const pop = prog(t, 8.15, .3);
+    document.querySelector(".logo").style.transform = `scale(${1 + Math.sin(pop*Math.PI)*.12})`;
+    [...BRAND].forEach((_, i) => {
+      const el = $("b"+i), p = prog(t, 7.95 + i*.06, .3), e = outBack(p);
+      el.style.opacity = cl(p*3); el.style.transform = `translateY(${(1-e)*90}px)`;
+    });
+    rise($("tag"), t, 8.5, .35, 40);
+    rise($("cta"), t, 8.85, .4, 120);
+    const pulse = t > 9.3 ? 1 + Math.sin((t-9.3)*2*Math.PI*1.4)*.035 : 1;
+    if (t > 9.25) $("cta").style.transform = `scale(${pulse})`;
+    rise($("hd"), t, 9.2, .3, 30);
+  }
+  // ----- přechody
+  // 2.5: modrý wipe zdola nahoru (2.30–2.70)
+  // 7.5: bílý flash
+  const w = $("wipe");
+  const wp = prog(t, 2.3, .4);
+  if (wp > 0 && wp < 1){ w.style.display="block"; w.style.transform = `translateY(${(1 - inOut(wp)*2)*100}%) skewY(-8deg)`; }
+  else w.style.display="none";
+  const f1 = t >= 4.95 && t < 5.25 ? 1 - (t-4.95)/.3 : 0;   // flash do fotky
+  const f2 = t >= 7.45 && t < 7.75 ? 1 - (t-7.45)/.3 : 0;
+  $("flash").style.opacity = Math.max(f1, f2) * .85;
+  $("prog").style.width = (t/10*1080) + "px";
+};
+window.render(0);
+</script>
+</body></html>
