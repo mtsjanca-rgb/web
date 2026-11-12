@@ -18,8 +18,10 @@ Render: `node render.js <outdir> [t1,t2,…]` → `window.render(t)` per frame, 
 · `beam(mesh,a,b)` stretch Y-capsule between points · `toned(geo, topHex, botHex, wear)` vertex-colour two-tone · `W(obj, localVec)` → world.
 
 ## js/env.js – `buildEnv(scene)` →
-`hemi, sun` (sun casts shadow, follows target (0,−6,22)), `sky` (sphere shader), `cloudMat`/`cloudSea` (y = −650, uniforms `off`, `camPos`),
-`puffs` group + `PUFFS[{g,z0}]`, `update(t, cam, SPEED, shot)` (cloud offset, puff wrap ±3000, sun follow).
+`hemi, sun` (sun casts shadow, dir = exported `SUN_DIR`, follows target (0,−6,22)), `sky` (gradient + sun halo + cirrus; uniform `drift`),
+`cloudMat`/`cloudSea` (cumulus deck: height-field ray-march, top y = −520, base −720, gaps show lower layer at −1700; uniforms `off`, `camPos`, `cov` coverage),
+`puffs` group (now empty, kept for API) + `PUFFS[]`, `towers` (distant towering cumulus sprites), `update(t, cam, SPEED, shot)` (cloud offset, wrap, sun follow, **calls `vfxTick`**).
+`scene.fog` (haze, 2.5–21 km) affects only cloud sprites. Post shader (scene.html): luma Bayer `L`=10 + chroma `CQ`=28, `SAT` 1.16, S-curve, warm highlights / cool shadows.
 
 ## js/tanker.js – `buildTanker(scene)` → (adds `tanker` to scene)
 `tanker` group · `boom` group (pivot above) · `boomOuter` (mat swapped `boomMat`↔`boomX` x-ray in S8) · `boomInner`, `nozzle`, `nozzleTip` (Object3D)
@@ -34,8 +36,17 @@ Render: `node render.js <outdir> [t1,t2,…]` → `window.render(t)` per frame, 
 `fSkin` is collected at build time (all meshes except tanks/dots) – add new skin meshes before that traverse.
 
 ## js/vfx.js
-`contactBurst(cx, t, R)` UI-layer burst at screen point R (20.62–21.22) · `flash(t)` #flash 20.62–20.72
-· `fuelOff(T, F)` / `fuelFlow(t, T, F)` S8 tank fill (15→100 %, 22.0–24.8) and dots · `CONTACT_T = 20.62`.
+UI: `contactBurst(cx, t, R)` small pixel flare + thin ring at R (20.62–21.1) · `flash(t)` subtle #flash · `fuelOff(T,F)` / `fuelFlow(t,T,F)` S8.
+Constants `CONTACT_T = 20.62`, `DISCONNECT_T = 25.2`.
+3D: `vfxInit(T, F)` builds engine heat haze (4 tanker engines + F-16 nozzle), contrails, contact core/ring/sparks/fuel mist, disconnect spray + droplets,
+sun glints (canopy, boom nozzle). `vfxTick(t, cam, shot)` animates them. **Already auto-wired**: `fuelOff` lazily calls `vfxInit`, `env.update` calls `vfxTick` –
+the timeline needs no change. Per-shot strengths in exported `VFX` (`VFX.contrail[shot]` tanker contrails: S3 .35, S10 1; `VFX.fContrail[shot]` F-16 S9 .55;
+`VFX.haze`; `VFX.glint[shot]` 0 in S5/S8). Contact effects only render in shot 7, disconnect only in shot 9.
+Optional handles used if present: `T.exhausts` (Object3D[] at engine exits, else found by exhaust-cone geometry / analytic fallback), `F.nozzleExit` (Vector3, fighter-local; default (0,−.05,8)).
+
+### TODO for cameraman
+- Nothing mandatory. To tune: `import { VFX } from "./vfx.js"` and set e.g. `VFX.contrail[9] = .5` (tanker trails pass over the S9 camera, so 0 now).
+- S10: contrails read best when the camera stays behind/above the engines (current path is fine).
 
 ## js/ui.js – `buildUI(cam)` →
 `cx` (2D ctx of #ui 1080×1920) · `plate(lines, x, y, alpha, anchor[x,y]|null, {size, blinkIdx, blinkOff, allYellow})`
