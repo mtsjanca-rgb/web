@@ -156,7 +156,7 @@ function tankerExhausts(T){
   return o2;
 }
 
-const NSPR = 140, NDRP = 70, NB = 70, NP = 18, NFU = NB + 4*NP + 8;
+const NSPR = 320, NDRP = 40, NB = 70, NP = 18, NFU = NB + 4*NP + 8;
 export function vfxInit(T, F){
   if (V) return V;
   const scene = T.tanker.parent;
@@ -185,7 +185,7 @@ export function vfxInit(T, F){
   V.sparks = points(18, 0xfff1c8, THREE.AdditiveBlending); V.sparks.material.uniforms.soft.value = .1; scene.add(V.sparks);
   V.mist = points(26, 0xd4d6d4, THREE.NormalBlending); V.mist.material.uniforms.soft.value = .9; scene.add(V.mist);
   // odpojení: mlha zbytkového paliva (modrobílá) + jednotlivé nažloutlé kapky
-  V.spray = points(NSPR, 0xe6eef6, THREE.NormalBlending); V.spray.material.uniforms.soft.value = .75; scene.add(V.spray);
+  V.spray = points(NSPR, 0xdde9f6, THREE.NormalBlending); V.spray.material.uniforms.soft.value = .6; scene.add(V.spray);
   V.drops = points(NDRP, 0xeadc9a, THREE.NormalBlending); V.drops.material.uniforms.soft.value = .2; scene.add(V.drops);
   // S8: svítící proud paliva (jádro + jantarová záře), přes rentgen vždy viditelný
   V.fuel = points(NFU, 0xffd27a, THREE.AdditiveBlending); V.fuel.material.uniforms.soft.value = .25;
@@ -213,7 +213,7 @@ export function vfxTick(t, cam, shot){
   // žár + stopy
   const ct = VFX.contrail[shot] ?? 0, fct = VFX.fContrail[shot] ?? 0;
   V.haze.forEach((h,i) => { h.material.uniforms.amp.value = .55*VFX.haze; h.material.uniforms.scroll.value = t*6 + i*1.7; h.visible = shot !== 5 && shot !== 8; });
-  V.fHaze.material.uniforms.amp.value = .42*VFX.haze; V.fHaze.material.uniforms.scroll.value = t*7; V.fHaze.visible = F.fighter.visible && shot !== 8;
+  V.fHaze.material.uniforms.amp.value = .55*VFX.haze; V.fHaze.material.uniforms.scroll.value = t*7; V.fHaze.visible = F.fighter.visible && shot !== 8;
   V.trails.forEach((c,i) => { const u = c.material.uniforms; c.visible = ct > 0; u.amp.value = .95*ct; u.scroll.value = t*150; u.time.value = t; });
   { const u = V.fTrail.material.uniforms; V.fTrail.visible = fct > 0; u.amp.value = .9*fct; u.scroll.value = t*150; u.time.value = t; }
 
@@ -238,19 +238,21 @@ export function vfxTick(t, cam, shot){
   V.spray.visible = V.drops.visible = onD;
   if (onD){
     T.nozzleTip.getWorldPosition(_w); T.boom.getWorldQuaternion(_q); _ax.set(0,0,1).applyQuaternion(_q);
-    for (let i=0;i<NSPR;i++){ const ts = Math.pow(i/NSPR, 1.4)*.38, a = dd - ts, life = .55 + hash(i+17)*.4;
+    // tenký proud palivové mlhy: částice vycházejí z trysky ~.6 s (slábnoucí), proud vzduchu je strhává dozadu (+z)
+    // → protažený pramen podél proudění; drobné kapičky se rychle odpaří (život .2–.45 s), průsvitné modrobílé
+    for (let i=0;i<NSPR;i++){ const sheath = i >= NSPR*.82, ts = Math.pow(hash(i+13), 1.6)*.6, a = dd - ts, life = (sheath ? .45 : .3) + hash(i+17)*.3;
       if (a < 0 || a > life){ setPt(V.spray, i, _w, 0, 0); continue; }
-      const a6 = hash(i+21)*6.283, r = .6 + hash(i+33)*1.4, k = a/life;
-      // výstřik ven z trysky ve směru tyče, kužel se rozevírá, odpor vzduchu → zrychlení dozadu
-      _v.copy(_ax).multiplyScalar(2.2*a*(1-k*.6)).add(_w);
-      _v.x += Math.cos(a6)*r*(.25 + a*1.6); _v.y += Math.sin(a6)*r*(.2 + a*1.1) - 1.6*a*a; _v.z += 3.5*a + 9*a*a;
-      setPt(V.spray, i, _v, .3 + 2.4*a + hash(i+5)*.3, .85*(1 - ts/.38*.45)*Math.pow(1 - k, 1.6)*cl(a/.04)); }
+      const a6 = hash(i+21)*6.283, k = a/life, sp = Math.sqrt(a)*(sheath ? .55 : .22)*(.4 + hash(i+33)*.8);
+      _v.copy(_ax).multiplyScalar(.6*a).add(_w);
+      _v.x += Math.cos(a6)*sp; _v.y += Math.sin(a6)*sp*.7 - .8*a*a; _v.z += (7 + hash(i+5)*7)*a + 6*a*a;
+      const fade = (1 - ts/.6*.65)*Math.pow(1 - k, 1.3)*cl(a/.03);
+      setPt(V.spray, i, _v, sheath ? .25 + .8*a : .08 + .06*hash(i+7) + .15*a, (sheath ? .2 : .75)*fade); }
     flushPts(V.spray);
     for (let i=0;i<NDRP;i++){ const ts = hash(i+50)*.32, a = dd - ts, life = .45 + hash(i+52)*.35;
       if (a < 0 || a > life){ setPt(V.drops, i, _w, 0, 0); continue; }
-      const a6 = hash(i+61)*6.283, r = 1 + hash(i+71)*3;
-      _v.copy(_ax).multiplyScalar(1.5*a).add(_w); _v.x += Math.cos(a6)*r*a; _v.y += Math.sin(a6)*r*a*.7 - 4.9*a*a; _v.z += 6*a + 14*a*a;
-      setPt(V.drops, i, _v, .07 + hash(i+3)*.07, 1 - a/life); }
+      const a6 = hash(i+61)*6.283, r = .5 + hash(i+71)*1.2;
+      _v.copy(_ax).multiplyScalar(.8*a).add(_w); _v.x += Math.cos(a6)*r*a; _v.y += Math.sin(a6)*r*a*.6 - 4.9*a*a; _v.z += 9*a + 12*a*a;
+      setPt(V.drops, i, _v, .04 + hash(i+3)*.04, .8*(1 - a/life)); }
     flushPts(V.drops);
   }
 

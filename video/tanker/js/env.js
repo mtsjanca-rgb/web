@@ -28,9 +28,9 @@ function noiseTex(){
 // [tRef, px (crown centre x, UI px), pyTop (crown, UI px), D (horizontal distance from camera, m), aspect (width / visible height), tex]
 // Grounded on the deck (base hidden under it); they stream +z at SPEED away from this front-left camera → shrink + drift (depth/speed).
 const NEAR_LAYOUT = [
-  [5.6, 200, 1170, 2900, .95, 0], [5.6, 870, 1235, 2300, .85, 1], [5.6, 520, 1610, 1500, 1.15, 2],
-  [7.65, 130, 1590, 1450, 1.05, 1], [7.65, 975, 1660, 1350, .95, 0],
-  [9.1, 640, 1640, 1300, 1.1, 2], [9.1, 330, 1200, 3300, .9, 1],
+  [5.6, 200, 1170, 2900, .8, 0], [5.6, 870, 1235, 2300, .72, 1], [5.6, 520, 1610, 1500, .95, 2],
+  [7.65, 130, 1590, 1450, .9, 1], [7.65, 975, 1660, 1350, .85, 0],
+  [9.1, 640, 1640, 1300, .95, 2], [9.1, 330, 1200, 3300, .78, 1],
 ];
 const S3P = [18,26,95,91,-27,-23,468,760];   // = S3 in timeline.js (az0, az1, r0, r1, y0, y1, px0, py)
 const NEAR_SHOTS = { 3:1 };
@@ -159,6 +159,7 @@ function paintTower(R, v){
   const hw = y => { const u = 1 - y/H; return W*(.44 - .2*u + .04*Math.sin(u*9 + v*1.7)); };
   let y = H*.97;
   while (y > H*.22){ const w = hw(y), n = 2 + Math.floor(R()*3);
+    B.push([cx(y) + (R()-.5)*w*.3, y - w*.2, w*(.55 + R()*.15)]);                    // jádro sloupce (bez děr)
     for (let i=0;i<n;i++){ const side = n === 1 ? 0 : (i/(n-1))*2 - 1, r = w*(.32 + R()*.34)*(1 - Math.abs(side)*.2);
       B.push([cx(y) + side*w*(.55 + R()*.3) + (R()-.5)*w*.2, y - R()*r*.4, r]); }
     if (R() < .6){ const sd = R() < .5 ? -1 : 1; B.push([cx(y) + sd*w*(.95 + R()*.15), y - R()*10, w*(.12 + R()*.12)]); }  // výrůstky na okraji
@@ -168,7 +169,7 @@ function paintTower(R, v){
   const ct = H*.22, cw = hw(ct)*1.05;
   for (let i=0;i<7;i++){ const a = Math.PI*(.12 + .76*i/6) + (R()-.5)*.25, r = cw*(.32 + R()*.22);
     B.push([cx(ct) - Math.cos(a)*cw*.62, ct + 18 - Math.sin(a)*cw*.55, r]); }
-  B.push([cx(ct) + (R()-.5)*cw*.3, ct - cw*.3, cw*.5]);
+  B.push([cx(ct) + (R()-.5)*cw*.3, ct - cw*.3, cw*.5]); B.push([cx(ct), ct + cw*.25, cw*.62]);
   let top = H; B.forEach(([x,y,r]) => top = Math.min(top, y - r));
   // silueta – stínová modrošedá
   g.fillStyle = "#8a9fc2"; B.forEach(([x,y,r]) => { g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill(); });
@@ -183,7 +184,7 @@ function paintTower(R, v){
     g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI*2); g.fill();
   });
   // spodní třetina do modrošeda + strana od slunce (vpravo) mírně ve stínu
-  const lg = g.createLinearGradient(0, top + (H-top)*.45, 0, H); lg.addColorStop(0, "rgba(110,135,180,0)"); lg.addColorStop(1, "rgba(104,128,174,.8)");
+  const lg = g.createLinearGradient(0, top + (H-top)*.35, 0, H); lg.addColorStop(0, "rgba(110,135,180,0)"); lg.addColorStop(1, "rgba(104,128,174,.8)");
   g.fillStyle = lg; g.fillRect(0, 0, W, H);
   const sg = g.createLinearGradient(W*.35, 0, W, 0); sg.addColorStop(0, "rgba(120,140,185,0)"); sg.addColorStop(1, "rgba(120,140,185,.32)");
   g.fillStyle = sg; g.fillRect(0, 0, W, H);
@@ -222,7 +223,7 @@ const nearTowers = new THREE.Group(); scene.add(nearTowers); const NEAR = [];
     const tv = Math.tan(cam.fov*Math.PI/360), px = S3P[6] - 50*ks, py = S3P[7];
     cam.rotateY(Math.atan((px/540-1)*tv*cam.aspect)); cam.rotateX(-Math.atan((1-py/960)*tv)); cam.updateMatrixWorld(true); };
   const BASE_Y = TOP - 70;
-  const DBG = true;
+  const DBG = false;
   NEAR_LAYOUT.forEach(([tr, px, py, D, asp, ti], i) => {
     s3Cam(tr);
     ray.set(px/540-1, 1-py/960, .5).unproject(cam).sub(cam.position).normalize();
