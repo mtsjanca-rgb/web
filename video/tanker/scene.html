@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  @font-face { font-family:"Jersey10"; src:url(lib/jersey10.woff2) format("woff2"); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; background:#000; }
+  #out { position:absolute; left:0; top:0; width:1080px; height:1920px; image-rendering:pixelated; }
+  #ui { position:absolute; left:0; top:0; width:1080px; height:1920px; }
+  #cap { position:absolute; left:70px; right:150px; top:1350px; text-align:center; font-family:"Inter",sans-serif; font-weight:800;
+         font-size:76px; line-height:1.1; color:#fff; letter-spacing:-.01em;
+         text-shadow:0 4px 0 rgba(0,0,0,.45), 0 0 22px rgba(0,0,0,.5), 0 0 3px rgba(0,0,0,.6); }
+  #cap .hl { color:#f4c34f; }
+  #flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; }
+</style></head><body>
+<canvas id="gl" width="720" height="1280" style="display:none"></canvas>
+<canvas id="out" width="360" height="640"></canvas>
+<canvas id="ui" width="1080" height="1920"></canvas>
+<div id="cap"></div>
+<div id="flash"></div>
+<script type="module">
+import * as THREE from "./lib/three.module.js";
+import { buildEnv } from "./js/env.js";
+import { buildTanker } from "./js/tanker.js";
+import { buildFighter } from "./js/fighter.js";
+import { buildUI } from "./js/ui.js";
+import { flash } from "./js/vfx.js";
+import { createTimeline, SPEED } from "./js/timeline.js";
+
+// ===================== render: 720×1280 → box 360×640 → Bayer (jas 10 úrovní + chroma) → ×3 =====================
+const RW = 720, RH = 1280, OW = 360, OH = 640;
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("gl"), antialias:false, preserveDrawingBuffer:true, logarithmicDepthBuffer:false });
+renderer.setPixelRatio(1); renderer.setSize(RW, RH, false);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const rt = new THREE.WebGLRenderTarget(RW, RH, { minFilter:THREE.LinearFilter, magFilter:THREE.LinearFilter, type:THREE.HalfFloatType });
+const rt2 = new THREE.WebGLRenderTarget(OW, OH, { minFilter:THREE.NearestFilter, magFilter:THREE.NearestFilter });
+const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const postMat = new THREE.ShaderMaterial({
+  uniforms:{ tex:{value:rt.texture}, src:{value:new THREE.Vector2(RW,RH)}, L:{value:10.0}, CQ:{value:28.0}, SAT:{value:1.16} },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  fragmentShader:`
+    uniform sampler2D tex; uniform vec2 src; uniform float L, CQ, SAT; varying vec2 vUv;
+    float b4(vec2 p){ vec2 q=mod(p,4.); int i=int(q.x)+int(q.y)*4;
+      if(i==0)return 0.;if(i==1)return 8.;if(i==2)return 2.;if(i==3)return 10.;if(i==4)return 12.;if(i==5)return 4.;if(i==6)return 14.;if(i==7)return 6.;
+      if(i==8)return 3.;if(i==9)return 11.;if(i==10)return 1.;if(i==11)return 9.;if(i==12)return 15.;if(i==13)return 7.;if(i==14)return 13.;return 5.; }
+    void main(){
+      vec2 px = 1.0/src;
+      vec2 base = (floor(gl_FragCoord.xy)*2.0 + 0.5) * px;
+      vec3 c = (texture2D(tex, base).rgb + texture2D(tex, base+vec2(px.x,0.)).rgb + texture2D(tex, base+vec2(0.,px.y)).rgb + texture2D(tex, base+px).rgb) * .25;
+      c = pow(max(c,0.), vec3(1.0/2.2));
+      // grading: mírná S-křivka, sytost, studené stíny / teplá světla
+      c = clamp(c, 0., 1.);
+      c = mix(c, c*c*(3.-2.*c), .22);
+      float lum = dot(c, vec3(.299,.587,.114));
+      c = mix(vec3(lum), c, SAT);
+      c *= mix(vec3(.95,.985,1.06), vec3(1.035,1.0,.955), smoothstep(.25,.85,lum));
+      // ordered dither v jasu (stejný krok ve všech kanálech → čisté tečky bez barevného šumu, jako reference)
+      float th = (b4(gl_FragCoord.xy)+.5)/16. - .5;
+      float Y = dot(c, vec3(.299,.587,.114));
+      vec3 ch = c - Y;
+      float Yq = floor(Y*L + th + .5)/L;
+      ch = floor(ch*CQ + th + .5)/CQ;
+      c = Yq + ch;
+      gl_FragColor = vec4(clamp(c,0.,1.),1.);
+    }`
+});
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), postMat));
+const outCtx = document.getElementById("out").getContext("2d");
+const pixBuf = new Uint8Array(OW*OH*4), imgData = outCtx.createImageData(OW, OH);
+
+// ===================== scéna (pořadí stavby = pořadí id objektů/materiálů a RNG → neměnit) =====================
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(42, RW/RH, 0.3, 30000);
+const env = buildEnv(scene);
+const T = buildTanker(scene);
+const F = buildFighter(scene);
+const U = buildUI(cam);
+const TL = createTimeline(cam, T, F, U);
+
+window.render = function(t){
+  const shot = TL.pose(t);
+  env.update(t, cam, SPEED, shot);
+  T.updateNav(t);
+
+  renderer.setRenderTarget(rt); renderer.render(scene, cam);
+  renderer.setRenderTarget(rt2); renderer.render(postScene, postCam);
+  renderer.readRenderTargetPixels(rt2, 0, 0, OW, OH, pixBuf);
+  for (let y=0;y<OH;y++){ const src=(OH-1-y)*OW*4, dst=y*OW*4; imgData.data.set(pixBuf.subarray(src, src+OW*4), dst); }
+  outCtx.putImageData(imgData, 0, 0);
+
+  // UI
+  U.clear();
+  TL.drawUI(t, shot);
+  U.setCaption(t);
+  flash(t);
+};
+await document.fonts.load("64px Jersey10");
+await U.loadLines();
+window.ready = true;
+window.render(0);
+</script>
+</body></html>

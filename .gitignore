@@ -1,0 +1,5 @@
+video/*/frames/
+video/*/check/
+video/*/*_raw.wav
+video/*/render.log
+video/*/sheet.png

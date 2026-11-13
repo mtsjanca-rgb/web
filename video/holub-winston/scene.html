@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:1080px; height:1920px; overflow:hidden; background:#05070d; font-family:"Inter",sans-serif; color:#fff; }
+  .abs { position:absolute; }
+  .gloss { background:linear-gradient(180deg,#2f6fd8 0%,#1a4fb0 48%,#123d8f 52%,#0c2c6e 100%); border:3px solid rgba(255,255,255,.55); box-shadow:0 8px 30px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.5); }
+  .gloss-red { background:linear-gradient(180deg,#ff4a4a 0%,#e01e1e 48%,#c40f0f 52%,#8f0707 100%); border:3px solid rgba(255,255,255,.6); }
+  .gloss-gold { background:linear-gradient(180deg,#ffe58a 0%,#ffc928 48%,#e8a900 52%,#b88100 100%); color:#1b1200; border:3px solid rgba(255,255,255,.7); }
+  .it { font-style:italic; font-weight:900; letter-spacing:-.01em; }
+  .stage { position:absolute; inset:0; }
+
+  /* horní lišta */
+  #top { left:40px; right:40px; top:110px; height:110px; border-radius:18px; display:flex; align-items:center; overflow:hidden; }
+  #live { height:100%; padding:0 26px; display:flex; align-items:center; gap:12px; font-size:44px; }
+  #live i { width:20px; height:20px; border-radius:50%; background:#fff; display:inline-block; }
+  #title { flex:1; text-align:center; font-size:44px; }
+  #clock { height:100%; width:270px; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#071430; border-left:3px solid rgba(255,255,255,.4); }
+  #clock small { font-size:20px; font-weight:800; letter-spacing:.15em; color:#9cc0ff; }
+  #clock b { font-size:52px; font-weight:900; font-variant-numeric:tabular-nums; font-style:italic; }
+
+  /* panel A: holub */
+  #pa { left:40px; right:40px; top:250px; height:650px; border-radius:22px; overflow:hidden; border:4px solid rgba(255,255,255,.5);
+        background:linear-gradient(180deg,#5db4ff 0%,#a8dcff 60%,#e2f4ff 100%); }
+  .lane { position:absolute; left:20px; top:20px; padding:8px 22px; border-radius:12px; font-size:34px; z-index:5; }
+  #sun { position:absolute; right:120px; top:70px; width:130px; height:130px; border-radius:50%; background:radial-gradient(#fff9d6,#ffe27a 60%,rgba(255,226,122,0) 72%); }
+  .strip { position:absolute; left:0; width:4000px; }
+  #pigeonA { position:absolute; left:290px; top:180px; width:420px; z-index:3; }
+  #map { position:absolute; right:22px; bottom:22px; width:300px; height:300px; border-radius:16px; overflow:hidden; border:3px solid #fff; box-shadow:0 6px 20px rgba(0,0,0,.35); z-index:6; }
+
+  /* panel B: internet */
+  #pb { left:40px; right:40px; top:930px; height:330px; border-radius:22px; overflow:hidden; border:4px solid rgba(255,255,255,.35);
+        background:radial-gradient(600px 300px at 20% 40%, #13254a, #070c18); }
+  #router { position:absolute; left:40px; top:110px; width:190px; }
+  #upl { position:absolute; left:260px; right:40px; top:100px; font-size:30px; font-weight:700; color:#bcd0f2; }
+  #bar { position:absolute; left:260px; right:40px; top:150px; height:56px; border-radius:28px; background:#0b1428; border:3px solid #34508a; overflow:hidden; }
+  #fill { position:absolute; left:0; top:0; bottom:0; background:repeating-linear-gradient(-45deg,#3ddc6a 0 22px,#27b553 22px 44px); }
+  #pct { position:absolute; right:40px; top:220px; font-size:64px; }
+  #eta { position:absolute; left:260px; top:240px; font-size:28px; color:#8aa0c8; font-weight:600; }
+
+  /* spodní lišta komentátora */
+  #l3 { left:40px; right:40px; top:1290px; height:150px; display:flex; border-radius:18px; overflow:hidden; }
+  #l3 .tag { width:150px; display:flex; align-items:center; justify-content:center; font-size:30px; text-align:center; line-height:1.05; }
+  #l3 .txt { flex:1; display:flex; align-items:center; padding:0 30px; font-size:46px; background:linear-gradient(180deg,#fff,#dfe6f2); color:#0b1730; }
+
+  /* překryvy */
+  .ov { position:absolute; inset:0; display:none; z-index:20; }
+  .dim { position:absolute; inset:0; background:rgba(3,6,14,.82); }
+  #hook1, #hook2 { position:absolute; left:60px; right:60px; text-align:center; text-shadow:0 8px 0 #0b2a6b, 0 14px 40px rgba(0,0,0,.6); }
+  #hook1 { top:560px; font-size:128px; line-height:.98; }
+  #hook2 { top:900px; font-size:200px; color:#ff3b3b; text-shadow:0 8px 0 #5a0000, 0 14px 40px rgba(0,0,0,.6); }
+  .card { position:absolute; top:330px; width:470px; height:860px; border-radius:26px; overflow:hidden; }
+  .card .hd { height:110px; display:flex; align-items:center; justify-content:center; font-size:56px; }
+  .card .pic { height:330px; display:grid; place-items:center; background:radial-gradient(#2a4f95,#0b1a3a); }
+  .card .row { padding:22px 30px; border-bottom:2px solid rgba(255,255,255,.12); font-size:34px; font-weight:700; background:#0b1530; }
+  .card .row small { display:block; font-size:22px; letter-spacing:.14em; color:#8fb3ff; font-weight:800; }
+  #vs { position:absolute; left:440px; top:660px; width:200px; height:200px; border-radius:50%; display:grid; place-items:center; font-size:84px; z-index:3; }
+  #rules { position:absolute; left:80px; right:80px; top:430px; border-radius:26px; overflow:hidden; background:#f4ecd8; color:#1a1a1a; box-shadow:0 30px 80px rgba(0,0,0,.6); }
+  #rules .hd { padding:30px; text-align:center; font-size:54px; color:#fff; }
+  #rules .r { padding:34px 44px; font-size:52px; font-weight:800; border-bottom:3px dashed #c9b88f; display:flex; gap:26px; align-items:flex-start; line-height:1.15; }
+  #rules .r span { flex:none; width:70px; height:70px; border-radius:50%; background:#c40f0f; color:#fff; display:grid; place-items:center; font-size:40px; }
+  #rules .src { padding:22px 44px; font-size:26px; color:#6b5b3a; font-weight:600; }
+  #fin { position:absolute; left:0; right:0; top:420px; text-align:center; }
+  #finflag { position:absolute; left:0; right:0; top:0; height:1920px; background:repeating-conic-gradient(#000 0 25%, #fff 0 50%) 0 0/120px 120px; opacity:0; }
+  #winner { font-size:190px; color:#ffd23a; text-shadow:0 10px 0 #7a5200, 0 20px 50px rgba(0,0,0,.7); }
+  #fintime { margin:30px auto 0; display:inline-block; padding:20px 50px; border-radius:20px; font-size:90px; }
+  #finnet { margin-top:40px; font-size:52px; font-weight:800; color:#cfe0ff; }
+  #replaybug { position:absolute; right:70px; top:280px; padding:10px 24px; border-radius:12px; font-size:40px; z-index:30; display:none; }
+  #slowbars { position:absolute; inset:0; pointer-events:none; display:none; background:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 3px, transparent 3px 6px); z-index:29; }
+  #results { position:absolute; left:70px; right:70px; top:400px; border-radius:26px; overflow:hidden; }
+  #results .hd { padding:28px; text-align:center; font-size:58px; }
+  #results .rw { display:flex; align-items:center; padding:30px 34px; font-size:48px; font-weight:800; background:#0b1530; border-bottom:2px solid rgba(255,255,255,.12); }
+  #results .rw .pos { width:90px; font-size:64px; font-style:italic; font-weight:900; color:#ffd23a; }
+  #results .rw .nm { flex:1; }
+  #results .rw .tm { font-variant-numeric:tabular-nums; font-style:italic; font-weight:900; }
+  #results .note { padding:30px 34px; font-size:36px; font-weight:600; color:#cfe0ff; background:#081022; line-height:1.3; }
+  #iv { position:absolute; inset:0; background:radial-gradient(800px 900px at 50% 45%, #1d3a75, #050a16); }
+  #pigeonI { position:absolute; left:120px; top:520px; width:600px; }
+  #mic { position:absolute; left:640px; top:600px; width:320px; transform-origin:50% 100%; }
+  #coo { position:absolute; left:560px; top:400px; padding:18px 34px; border-radius:40px; background:#fff; color:#0b1730; font-size:64px; font-weight:900; font-style:italic; }
+  #nocom { position:absolute; left:60px; right:60px; top:1290px; height:150px; display:flex; align-items:center; justify-content:center; border-radius:18px; font-size:58px; }
+  #flash { position:absolute; inset:0; background:#fff; opacity:0; z-index:50; pointer-events:none; }
+  #wipe { position:absolute; inset:0; z-index:40; display:none; }
+  #wipe div { position:absolute; top:-10%; height:120%; width:60%; transform:skewX(-14deg); }
+</style></head><body>
+
+<div class="stage" id="stage">
+  <!-- vysílání -->
+  <div id="top" class="abs gloss it">
+    <div id="live" class="gloss-red"><i id="dot"></i>LIVE</div>
+    <div id="title">PIGEON <span style="color:#ffd23a">vs</span> INTERNET</div>
+    <div id="clock"><small>RACE TIME</small><b id="clk">0:00:00</b></div>
+  </div>
+
+  <div id="pa" class="abs">
+    <div class="lane gloss it">🕊️ WINSTON</div>
+    <div id="sun"></div>
+    <svg class="strip" id="clouds" style="top:60px" height="300" viewBox="0 0 4000 300"></svg>
+    <svg class="strip" id="hills2" style="bottom:0" height="330" viewBox="0 0 4000 330"></svg>
+    <svg class="strip" id="hills1" style="bottom:0" height="230" viewBox="0 0 4000 230"></svg>
+    <div id="pigeonA"></div>
+    <svg id="map" viewBox="0 0 300 300">
+      <rect width="300" height="300" fill="#e9dcb8"/>
+      <path d="M210 0 C 200 60, 240 120, 225 170 S 250 260, 240 300 L300 300 L300 0Z" fill="#4f9fe0"/>
+      <path d="M210 0 C 200 60, 240 120, 225 170 S 250 260, 240 300" fill="none" stroke="#fff" stroke-width="3"/>
+      <path d="M40 40 Q 120 60 150 140 T 222 228" fill="none" stroke="#c40f0f" stroke-width="5" stroke-dasharray="10 9" id="route"/>
+      <circle cx="40" cy="40" r="9" fill="#123d8f"/><text x="22" y="72" font-size="22" font-weight="900" font-family="Inter" fill="#123d8f">HOWICK</text>
+      <circle cx="222" cy="228" r="9" fill="#123d8f"/><text x="128" y="262" font-size="22" font-weight="900" font-family="Inter" fill="#123d8f">DURBAN</text>
+      <circle id="mdot" r="13" fill="#ff2a2a" stroke="#fff" stroke-width="4"/>
+    </svg>
+  </div>
+
+  <div id="pb" class="abs">
+    <div class="lane gloss-red it">📡 THE INTERNET (ADSL)</div>
+    <svg id="router" viewBox="0 0 190 130">
+      <line x1="40" y1="40" x2="20" y2="0" stroke="#9aa8c4" stroke-width="7" stroke-linecap="round"/>
+      <line x1="150" y1="40" x2="170" y2="0" stroke="#9aa8c4" stroke-width="7" stroke-linecap="round"/>
+      <rect x="5" y="40" width="180" height="70" rx="16" fill="#26324d" stroke="#5b6d96" stroke-width="4"/>
+      <circle id="led1" cx="45" cy="75" r="8" fill="#3ddc6a"/><circle id="led2" cx="75" cy="75" r="8" fill="#3ddc6a"/>
+      <circle id="led3" cx="105" cy="75" r="8" fill="#ffb020"/><circle id="led4" cx="135" cy="75" r="8" fill="#3ddc6a"/>
+    </svg>
+    <div id="upl">Uploading: payload (4 GB)</div>
+    <div id="bar"><div id="fill"></div></div>
+    <div id="eta">Time remaining: calculating</div>
+    <div id="pct" class="it">0.0 %</div>
+  </div>
+
+  <div id="l3" class="abs">
+    <div class="tag gloss it">LIVE<br>COMM.</div>
+    <div class="txt it" id="l3t"></div>
+  </div>
+</div>
+
+<!-- 0–6: hook -->
+<div class="ov" id="ovHook"><div class="dim" id="hookdim" style="background:rgba(3,6,14,.55)"></div>
+  <div id="hook1" class="it">A PIGEON RACED THE INTERNET.</div>
+  <div id="hook2" class="it">LIVE.</div>
+</div>
+
+<!-- 6–10.5: závodníci -->
+<div class="ov" id="ovTape"><div class="dim"></div>
+  <div class="card gloss" id="cardA" style="left:40px">
+    <div class="hd it">WINSTON</div>
+    <div class="pic"><div id="pigeonC" style="width:330px"></div></div>
+    <div class="row"><small>AGE</small>11 months</div>
+    <div class="row"><small>PAYLOAD</small>4 GB memory stick</div>
+    <div class="row"><small>ENGINE</small>Two wings</div>
+  </div>
+  <div id="vs" class="gloss-gold it">VS</div>
+  <div class="card gloss-red" id="cardB" style="right:40px">
+    <div class="hd it">ADSL LINE</div>
+    <div class="pic" style="background:radial-gradient(#5a1a1a,#1a0505)"><svg viewBox="0 0 190 130" width="260"><line x1="40" y1="40" x2="20" y2="0" stroke="#d6dbe6" stroke-width="7" stroke-linecap="round"/><line x1="150" y1="40" x2="170" y2="0" stroke="#d6dbe6" stroke-width="7" stroke-linecap="round"/><rect x="5" y="40" width="180" height="70" rx="16" fill="#26324d" stroke="#8a9bc0" stroke-width="4"/><circle cx="45" cy="75" r="8" fill="#3ddc6a"/><circle cx="75" cy="75" r="8" fill="#3ddc6a"/><circle cx="105" cy="75" r="8" fill="#ffb020"/><circle cx="135" cy="75" r="8" fill="#3ddc6a"/></svg></div>
+    <div class="row" style="background:#2a0b0b"><small style="color:#ff9b9b">PROVIDER</small>Telkom</div>
+    <div class="row" style="background:#2a0b0b"><small style="color:#ff9b9b">PAYLOAD</small>The same 4 GB</div>
+    <div class="row" style="background:#2a0b0b"><small style="color:#ff9b9b">ENGINE</small>Cables</div>
+  </div>
+</div>
+
+<!-- 10.5–14: pravidla -->
+<div class="ov" id="ovRules"><div class="dim"></div>
+  <div id="rules">
+    <div class="hd gloss-red it">OFFICIAL RACE RULES</div>
+    <div class="r" id="r1"><span>1</span><div>No cats allowed.</div></div>
+    <div class="r" id="r2"><span>2</span><div>Birdseed must not have any performance-enhancing seeds.</div></div>
+    <div class="src">South Africa, September 2009</div>
+  </div>
+</div>
+
+<!-- 30–35: cíl -->
+<div class="ov" id="ovFin"><div id="finflag"></div><div class="dim" style="background:rgba(3,6,14,.7)"></div>
+  <div id="fin">
+    <div id="winner" class="it">WINNER!</div>
+    <div id="fintime" class="gloss it">1 h 8 min</div>
+    <div id="finnet">Internet at the finish: <b style="color:#3ddc6a">about 4 %</b></div>
+  </div>
+</div>
+
+<!-- 40–45: výsledky -->
+<div class="ov" id="ovRes"><div class="dim"></div>
+  <div id="results" class="gloss">
+    <div class="hd it">FINAL RESULTS</div>
+    <div class="rw" id="rw1"><div class="pos">1</div><div class="nm">🕊️ Winston</div><div class="tm">4 GB ✔</div></div>
+    <div class="rw" id="rw2"><div class="pos" style="color:#cfd6e4">2</div><div class="nm">📡 ADSL</div><div class="tm">≈ 4 %</div></div>
+    <div class="note" id="rnote">The race was staged by an IT company, Unlimited IT, as a protest against slow internet.</div>
+  </div>
+</div>
+
+<!-- 45–49: rozhovor -->
+<div class="ov" id="ovIv">
+  <div id="iv"></div>
+  <div id="pigeonI"></div>
+  <svg id="mic" viewBox="0 0 320 420">
+    <rect x="200" y="150" width="34" height="270" rx="12" transform="rotate(-28 217 285)" fill="#1b1f2a"/>
+    <g transform="rotate(-28 200 120)">
+      <rect x="150" y="40" width="110" height="150" rx="55" fill="#7b8496"/>
+      <rect x="150" y="40" width="110" height="150" rx="55" fill="url(#mesh)"/>
+      <rect x="135" y="170" width="140" height="56" rx="10" fill="#c40f0f"/>
+      <text x="205" y="210" font-family="Inter" font-weight="900" font-style="italic" font-size="32" fill="#fff" text-anchor="middle">LIVE</text>
+    </g>
+    <defs><pattern id="mesh" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2.5" fill="#3d4352"/></pattern></defs>
+  </svg>
+  <div id="coo">crrrooo</div>
+  <div id="nocom" class="gloss it">Winston has no comment.</div>
+</div>
+
+<div id="replaybug" class="gloss-gold it">⏪ REPLAY · SLOW-MO</div>
+<div id="slowbars"></div>
+<div id="wipe"><div style="background:#1a4fb0"></div><div style="background:#ffc928"></div><div style="background:#e01e1e"></div></div>
+<div id="flash"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const cl = (x,a=0,b=1) => Math.min(b, Math.max(a, x));
+const P = (t,s,d) => cl((t-s)/d);
+const oc = p => 1 - Math.pow(1-p,3);
+const ob = p => { const c1=1.7,c3=c1+1; return 1 + c3*Math.pow(p-1,3) + c1*Math.pow(p-1,2); };
+const io = p => p<.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2,3)/2;
+
+// ---------- holub ----------
+function pigeon(){
+  return `<svg viewBox="0 0 320 240" style="width:100%;overflow:visible">
+    <defs><linearGradient id="neck" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#5fd39a"/><stop offset=".5" stop-color="#7b5fd6"/><stop offset="1" stop-color="#3fb38a"/></linearGradient></defs>
+    <g class="legs" style="display:none">
+      <path d="M135 170 L128 215 M128 215 l-14 8 M128 215 l2 12 M128 215 l14 6" stroke="#e86a7a" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M165 170 L170 215 M170 215 l-12 9 M170 215 l4 12 M170 215 l15 4" stroke="#e86a7a" stroke-width="7" stroke-linecap="round" fill="none"/>
+    </g>
+    <g class="wingFar" style="transform-origin:150px 100px"><path d="M150 100 C 120 40, 70 10, 20 20 C 60 40, 90 70, 120 115 Z" fill="#6f7a90"/></g>
+    <path d="M70 120 L 10 105 L 18 135 L 6 160 L 75 145 Z" fill="#5d687e"/>
+    <path d="M10 105 L18 135 L6 160" fill="none" stroke="#2c3344" stroke-width="7"/>
+    <ellipse cx="140" cy="130" rx="88" ry="52" fill="#9aa5b8"/>
+    <ellipse cx="150" cy="150" rx="70" ry="30" fill="#b3bccb"/>
+    <path d="M190 80 C 215 85, 230 120, 215 150 C 195 150, 180 120, 175 100 Z" fill="url(#neck)"/>
+    <g class="pack">
+      <rect x="98" y="66" width="74" height="46" rx="12" fill="#e23b3b" stroke="#8f0707" stroke-width="4"/>
+      <rect x="114" y="40" width="30" height="34" rx="4" fill="#c9ced8" stroke="#7b8496" stroke-width="3"/>
+      <rect x="119" y="30" width="20" height="14" fill="#3a7bd5"/>
+      <text x="135" y="98" font-family="Inter" font-weight="900" font-size="20" fill="#fff" text-anchor="middle">4 GB</text>
+      <path d="M150 112 L160 160" stroke="#8f0707" stroke-width="5"/>
+    </g>
+    <circle cx="228" cy="70" r="40" fill="#8d98ac"/>
+    <circle cx="242" cy="62" r="19" fill="#ff9f43"/><circle cx="242" cy="62" r="15" fill="#fff"/>
+    <circle class="pupil" cx="245" cy="62" r="8" fill="#111"/><circle cx="248" cy="58" r="3" fill="#fff"/>
+    <path d="M262 76 L 296 84 L 262 92 Z" fill="#3b3f4a"/><ellipse cx="264" cy="77" rx="7" ry="5" fill="#f1f1f1"/>
+    <g class="wingNear" style="transform-origin:150px 105px"><path d="M150 105 C 120 30, 60 0, 0 10 C 40 35, 60 55, 75 70 C 55 72, 40 80, 30 92 C 70 95, 100 110, 130 128 Z" fill="#c2cad6" stroke="#6f7a90" stroke-width="3"/>
+      <path d="M40 30 L80 60 M30 60 L75 80" stroke="#8d98ac" stroke-width="3"/></g>
+  </svg>`;
+}
+["pigeonA","pigeonC","pigeonI"].forEach(id => $(id).innerHTML = pigeon());
+function flap(el, t, speed=9, amp=38, base=0){
+  const a = Math.sin(t*speed*2*Math.PI);
+  el.querySelector(".wingNear").style.transform = `rotate(${base + a*amp}deg)`;
+  el.querySelector(".wingFar").style.transform = `rotate(${base*.6 + a*amp*.7}deg)`;
+}
+
+// ---------- krajina ----------
+function hillsPath(w,h,seed,amp,base){
+  let d=`M0 ${h}`; for(let x=0;x<=w;x+=20){ const y=base + Math.sin(x/170+seed)*amp + Math.sin(x/61+seed*2)*amp*.35; d+=` L${x} ${y}`; } return d+` L${w} ${h} Z`;
+}
+$("hills2").innerHTML = `<path d="${hillsPath(4000,330,1,40,150)}" fill="#7cc576"/>`;
+let trees=""; for(let x=40;x<4000;x+=130){ const y=95+Math.sin(x/170+3)*28+Math.sin(x/61+6)*10; trees+=`<circle cx="${x}" cy="${y-18}" r="26" fill="#2f8a43"/><rect x="${x-5}" y="${y-5}" width="10" height="30" fill="#5a3b1f"/>`; }
+$("hills1").innerHTML = `<path d="${hillsPath(4000,230,3,28,95)}" fill="#3fa356"/>${trees}`;
+let cl2=""; for(let i=0;i<9;i++){ const x=i*460+80, y=40+(i%3)*60; cl2+=`<g fill="#fff" opacity=".9"><ellipse cx="${x}" cy="${y+30}" rx="110" ry="34"/><ellipse cx="${x-40}" cy="${y+18}" rx="55" ry="40"/><ellipse cx="${x+35}" cy="${y+10}" rx="65" ry="50"/></g>`; }
+$("clouds").innerHTML = cl2;
+
+const route = $("route"), RL = route.getTotalLength();
+
+// ---------- komentář ----------
+const COMM = [
+  [0.4, 5.6, "And they're off!"],
+  [14.3, 18.3, "Winston leaves Howick at full speed."],
+  [18.3, 23.3, "Meanwhile, the internet is… thinking."],
+  [23.3, 26.6, "Three percent! The crowd goes mild."],
+  [26.6, 29.8, "Durban in sight! What a bird!"],
+  [35.0, 39.8, "No photo finish required."],
+];
+function race(t){ return cl((t-0.4)/29.4); }   // 0 → 1 během závodu (0,4–29,8 s)
+
+function show(id,on){ $(id).style.display = on ? "block" : "none"; }
+
+window.render = function(t){
+  const r = race(t);
+  // hodiny: 1 h 8 min = 4080 s
+  const secs = Math.round(r*4080);
+  const hh = Math.floor(secs/3600), mm = Math.floor(secs%3600/60), ss = secs%60;
+  $("clk").textContent = `${hh}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
+  $("dot").style.opacity = (Math.floor(t*2)%2) ? .25 : 1;
+
+  // internet: ~4 % na konci, plazivě a s cukáním
+  const pr = 4 * Math.pow(r, 1.15) * (1 - .04*Math.sin(t*3)*(r>0&&r<1));
+  $("fill").style.width = (cl(pr,0,100)) + "%";
+  $("pct").textContent = (Math.floor(pr*10)/10).toFixed(1) + " %";
+  $("eta").textContent = "Time remaining: calculating" + ".".repeat(Math.floor(t*2)%4);
+  ["led1","led2","led3","led4"].forEach((id,i)=> $(id).style.opacity = (Math.sin(t*(7+i*3)+i)>-.2)?1:.25);
+
+  // holub: start, let, scroll krajiny
+  const takeoff = oc(P(t,0.4,1.4));
+  const pA = $("pigeonA");
+  const landing = P(t,28.6,1.2);
+  const bob = Math.sin(t*2.4)*14;
+  pA.style.transform = `translate(${-260 + takeoff*260 + landing*120}px, ${(1-takeoff)*260 + bob + landing*120}px) rotate(${(1-takeoff)*-12}deg)`;
+  pA.querySelector(".legs").style.display = (t < 0.9 || landing > .5) ? "block" : "none";
+  flap(pA, t, t<0.4 ? 0 : 6.5, t<0.4 ? 0 : 40);
+  const speed = takeoff * (1 - landing);
+  const dist = (t - 0.4 - 0.7) * 700 * (t>0.4) ; // px
+  const mod = (x, m) => ((x % m) + m) % m;
+  $("hills1").style.transform = `translateX(${-mod(Math.max(0,dist)*1.0, 2000)}px)`;
+  $("hills2").style.transform = `translateX(${-mod(Math.max(0,dist)*.5, 2000)}px)`;
+  $("clouds").style.transform = `translateX(${-mod(Math.max(0,dist)*.22 + t*15, 1840)}px)`;
+  const pt = route.getPointAtLength(RL * r);
+  $("mdot").setAttribute("cx", pt.x); $("mdot").setAttribute("cy", pt.y);
+  $("mdot").setAttribute("r", 11 + Math.sin(t*8)*2);
+
+  // komentář
+  const c = COMM.find(([a,b]) => t>=a && t<b);
+  const l3 = $("l3");
+  if (c){ const p = oc(P(t,c[0],.3)); $("l3t").textContent = c[2]; l3.style.opacity = 1; l3.style.transform = `translateX(${(1-p)*-1100}px)`; }
+  else l3.style.opacity = 0;
+
+  // překryvy
+  show("ovHook", t < 5.9);
+  if (t < 5.9){
+    const h1 = P(t,0.45,.3), h2 = P(t,1.3,.25), out = P(t,5.3,.5);
+    $("hook1").style.opacity = cl(h1*3) * (1-out);
+    $("hook1").style.transform = `scale(${1.5 - .5*oc(h1)})`;
+    $("hook2").style.opacity = cl(h2*3) * (1-out);
+    $("hook2").style.transform = `scale(${2 - oc(h2)}) rotate(-4deg)`;
+    $("hookdim").style.opacity = 1 - out;
+  }
+  show("ovTape", t >= 6 && t < 10.5);
+  if (t >= 6 && t < 10.5){
+    $("cardA").style.transform = `translateX(${(1-oc(P(t,6.05,.45)))*-600}px)`;
+    $("cardB").style.transform = `translateX(${(1-oc(P(t,6.35,.45)))*600}px)`;
+    const v = P(t,6.8,.35); $("vs").style.transform = `scale(${ob(v)}) rotate(${(1-v)*-90}deg)`; $("vs").style.opacity = v>0?1:0;
+    flap($("pigeonC"), t, 2.2, 20, -10);
+  }
+  show("ovRules", t >= 10.5 && t < 14);
+  if (t >= 10.5 && t < 14){
+    $("rules").style.transform = `translateY(${(1-ob(P(t,10.55,.45)))*900}px) rotate(${(1-P(t,10.55,.45))*6}deg)`;
+    for (const [id,s] of [["r1",11.3],["r2",12.2]]){ const p=P(t,s,.3); $(id).style.opacity=cl(p*2.5); $(id).style.transform=`translateX(${(1-oc(p))*80}px)`; }
+  }
+  show("ovFin", t >= 29.8 && t < 35);
+  if (t >= 29.8 && t < 35){
+    $("finflag").style.opacity = .55*(1-P(t,29.8,.9));
+    const w = P(t,30.0,.35); $("winner").style.transform = `scale(${ob(w)})`; $("winner").style.opacity = cl(w*3);
+    const f = P(t,30.6,.35); $("fintime").style.transform = `translateY(${(1-oc(f))*120}px)`; $("fintime").style.opacity = cl(f*3);
+    const n = P(t,31.4,.35); $("finnet").style.opacity = n; $("finnet").style.transform = `translateY(${(1-oc(n))*60}px)`;
+  }
+  // 35–40: zpomalený záznam přistání
+  const replay = t >= 35 && t < 40;
+  $("replaybug").style.display = replay ? "block" : "none";
+  $("slowbars").style.display = replay ? "block" : "none";
+  if (replay){
+    const k = (t-35)/5;                         // pomalý přílet a dosednutí
+    const ease = io(cl(k*1.15));
+    pA.style.transform = `translate(${-200 + ease*200}px, ${-60 + ease*200}px) rotate(${(1-ease)*8}deg) scale(${1.05 + k*.12})`;
+    pA.querySelector(".legs").style.display = k > .35 ? "block" : "none";
+    flap(pA, t*0.25, 6.5, 40*(1-cl((k-.75)*4)), k>.85 ? -20 : 0);
+    $("hills1").style.transform = `translateX(${-mod(1000 + ease*150, 2000)}px)`;
+    $("hills2").style.transform = `translateX(${-mod(500 + ease*75, 2000)}px)`;
+    $("l3").style.top = "1290px";
+  }
+  show("ovRes", t >= 40 && t < 45);
+  if (t >= 40 && t < 45){
+    $("results").style.transform = `scale(${.85 + .15*ob(P(t,40.05,.4))})`; $("results").style.opacity = cl(P(t,40.05,.2));
+    for (const [id,s] of [["rw1",40.6],["rw2",41.0],["rnote",41.6]]){ const p=P(t,s,.3); $(id).style.opacity=cl(p*2.5); $(id).style.transform=`translateX(${(1-oc(p))*-90}px)`; }
+  }
+  show("ovIv", t >= 45);
+  if (t >= 45){
+    const pi = $("pigeonI");
+    pi.querySelector(".legs").style.display = "block";
+    flap(pi, 0, 0, 0, -25);
+    const m = oc(P(t,45.1,.5)); $("mic").style.transform = `translate(${(1-m)*400}px, ${(1-m)*300}px) rotate(${-4 + Math.sin(t*3)*2}deg)`;
+    // hlava se otočí k mikrofonu a "crrrooo"
+    const cooOn = (t > 46.4 && t < 47.6);
+    pi.style.transform = `translateY(${cooOn ? Math.sin(t*40)*4 : 0}px)`;
+    pi.querySelector(".pupil").setAttribute("cx", t > 45.6 ? 241 : 245);
+    const cp = P(t,46.4,.2); $("coo").style.opacity = cooOn ? 1 : (t >= 47.6 ? 1 - P(t,47.6,.3) : 0);
+    $("coo").style.transform = `scale(${ob(cp)})`;
+    const nc = P(t,47.9,.35); $("nocom").style.opacity = cl(nc*3); $("nocom").style.transform = `translateY(${(1-oc(nc))*80}px)`;
+  }
+
+  // přechody
+  const wipes = [5.75, 10.35, 13.85, 34.85, 39.85, 44.85];
+  let wv = null; for (const s of wipes) if (t >= s && t < s+.4) wv = (t-s)/.4;
+  const W = $("wipe");
+  if (wv !== null){ W.style.display="block"; [...W.children].forEach((d,i)=>{ const p = cl(wv*1.4 - i*.15); d.style.left = (-80 + io(p)*220) + "%"; }); }
+  else W.style.display="none";
+  const fl = [[0.4,.25],[29.8,.35]];
+  let fo = 0; for (const [s,d] of fl) if (t>=s && t<s+d) fo = Math.max(fo, 1-(t-s)/d);
+  $("flash").style.opacity = fo*.9;
+};
+window.render(0);
+</script>
+</body></html>
